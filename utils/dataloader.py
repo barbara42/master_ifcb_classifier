@@ -46,6 +46,9 @@ class CustomDataset(Dataset):
         self.transform = transform
         self.data = self.df[self.df['split'] == split]
 
+    def num_classes(self):
+        return len(self.labels)
+
     def __len__(self):
         """
         Returns the size of the dataset.

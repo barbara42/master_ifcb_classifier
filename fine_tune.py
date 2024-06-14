@@ -44,7 +44,9 @@ if __name__ == '__main__':
     dataloaders = get_dataloaders(data_dir, label_path, batch_size=32, num_workers=num_workers)
 
     print("loading model...")
-    model = model_factory(model_name)
+    num_classes = dataloaders['train'].num_classes()
+    print("num classes:", num_classes)
+    model = model_factory(model_name, num_classes=num_classes)
 
     # Define loss function and optimizer
     criterion = torch.nn.CrossEntropyLoss()

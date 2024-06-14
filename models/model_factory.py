@@ -8,8 +8,10 @@
 
 from torchvision import models
 import torch
+import torch.nn as nn
 
-def model_factory(model_name, pretrained=True):
+
+def model_factory(model_name, pretrained=True, num_classes=2):
     """
     Factory method to initialize and return the requested model architecture with pre-trained weights.
 
@@ -23,7 +25,13 @@ def model_factory(model_name, pretrained=True):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if model_name == 'resnet':
         #model = models.resnet50(pretrained=pretrained)
-        model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1, device=device)
+        #model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1, device=device)
+        model = models.resnet18(weights='IMAGENET1K_V1')
+        num_ftrs = model.fc.in_features
+        # Here the size of each output sample is set to 2.
+        # Alternatively, it can be generalized to ``nn.Linear(num_ftrs, len(class_names))``.
+        model.fc = nn.Linear(num_ftrs, num_classes)
+        model = model.to(device)
     elif model_name == 'vit':
         model = models.vit_b_16(pretrained=pretrained)
     elif model_name == 'simclr':

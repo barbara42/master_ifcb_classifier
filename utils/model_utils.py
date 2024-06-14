@@ -116,12 +116,16 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=10):
     # TODO: create and save plot of loss over training epochs
 
 def validate_model(model, val_loader, criterion):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     model.eval()
     val_loss = 0.0
     correct = 0
     total = 0
     with torch.no_grad():
         for images, labels in tqdm(val_loader):
+            images = images.to(device)
+            labels = labels.to(device)
             outputs = model(images)
             loss = criterion(outputs, labels)
             val_loss += loss.item()
