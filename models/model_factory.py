@@ -7,6 +7,7 @@
 # custom implementation or loading.
 
 from torchvision import models
+import torch
 
 def model_factory(model_name, pretrained=True):
     """
@@ -19,8 +20,10 @@ def model_factory(model_name, pretrained=True):
     Returns:
         torch.nn.Module: The initialized model architecture.
     """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if model_name == 'resnet':
-        model = models.resnet50(pretrained=pretrained)
+        #model = models.resnet50(pretrained=pretrained)
+        model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1, device=device)
     elif model_name == 'vit':
         model = models.vit_b_16(pretrained=pretrained)
     elif model_name == 'simclr':

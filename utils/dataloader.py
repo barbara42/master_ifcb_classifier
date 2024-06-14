@@ -8,7 +8,7 @@ import pandas as pd
 import os
 from PIL import Image
 import json
-
+import torch
 
 class CustomDataset(Dataset):
     """
@@ -104,6 +104,8 @@ def get_dataloaders(data_dir, label_path, batch_size=32, num_workers=1):
     Returns:
         dict: A dictionary with DataLoader instances for 'train', 'val', and 'test' splits.
     """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     transform = transforms.Compose([
         transforms.Resize((256, 256)),
         transforms.ToTensor(),
@@ -113,7 +115,7 @@ def get_dataloaders(data_dir, label_path, batch_size=32, num_workers=1):
     samplers = {split: create_balanced_sampler(datasets[split]) for split in ['train', 'val', 'test']}
 
     dataloaders = {
-        split: DataLoader(datasets[split], batch_size=batch_size, sampler=samplers[split], num_workers=num_workers)
+        split: DataLoader(datasets[split], batch_size=batch_size, sampler=samplers[split], num_workers=num_workers, device=device)
         for split in ['train', 'val', 'test']
     }
 

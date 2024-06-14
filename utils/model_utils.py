@@ -89,12 +89,19 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=10):
     for epoch in range(num_epochs):
         running_loss = 0.0
         for images, labels in tqdm(train_loader):
+            print("1")
             optimizer.zero_grad()
+            print("2")
             outputs = model(images)
+            print("3")
             loss = criterion(outputs, labels)
+            print("4")
             loss.backward()
+            print("5")
             optimizer.step()
+            print("6")
             running_loss += loss.item()
+            print("7")
         print(f'Epoch {epoch+1}, Loss: {running_loss/len(train_loader)}')
 
         # Validate every 5 epochs

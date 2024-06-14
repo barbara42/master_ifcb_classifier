@@ -18,6 +18,9 @@ from models.model_factory import model_factory
 
 if __name__ == '__main__':
 
+    print("Use CUDA?", torch.cuda.is_available())
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Fine-tune a model on a custom dataset.')
     parser.add_argument('--model', type=str, required=True, help='Model name')
