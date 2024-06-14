@@ -31,6 +31,7 @@ for epoch in range(num_epochs):
     # Training step
     # Validation step
     # Log metrics, save model checkpoints, etc.
+    pass
 
 # Save final model and outputs
 save_model(model, args.output_dir, f"{args.model}_trained", class_names)

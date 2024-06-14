@@ -101,6 +101,8 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=10):
         if (epoch + 1) % 5 == 0:
             print("Validating...")
             validate_model(model, dataloaders["val"], criterion)
+    
+    # TODO: create and save plot of loss over training epochs
 
 def validate_model(model, val_loader, criterion):
     model.eval()

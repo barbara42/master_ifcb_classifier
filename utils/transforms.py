@@ -47,3 +47,4 @@ simclr_transforms = transforms.Compose([
 
 # Note: The actual application of these transformations would be in the data loading process, specifically when
 # initializing the dataset instances for training, validation, and testing.
+
