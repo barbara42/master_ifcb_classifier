@@ -82,6 +82,8 @@ def get_model_architecture(model_name):
 # using PyTorch's state_dict format, which is a common practice for PyTorch models.
 
 def train_model(model, dataloaders, criterion, optimizer, num_epochs=10):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
     print("training model")
     model.train()
     train_loader = dataloaders["train"]
@@ -89,6 +91,8 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=10):
     for epoch in range(num_epochs):
         running_loss = 0.0
         for images, labels in tqdm(train_loader):
+            images = images.to(device)
+            labels = labels.to(device)
             print("1")
             optimizer.zero_grad()
             print("2")
