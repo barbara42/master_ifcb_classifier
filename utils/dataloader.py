@@ -9,6 +9,7 @@ import os
 from PIL import Image
 import json
 import torch
+from .my_transforms import PadToMaxSize
 
 class CustomDataset(Dataset):
     """
@@ -94,7 +95,7 @@ def create_balanced_sampler(dataset):
 
     return WeightedRandomSampler(sample_weights, len(sample_weights))
 
-def get_dataloaders(data_dir, label_path, batch_size=32, num_workers=1):
+def get_dataloaders(data_dir, label_path, batch_size=32, num_workers=1, my_transforms=None):
     """
     Prepares DataLoader instances for train, validation, and test sets.
 
@@ -107,10 +108,20 @@ def get_dataloaders(data_dir, label_path, batch_size=32, num_workers=1):
     Returns:
         dict: A dictionary with DataLoader instances for 'train', 'val', and 'test' splits.
     """
-    transform = transforms.Compose([
-        transforms.Resize((256, 256)),
-        transforms.ToTensor(),
-    ])
+    t_list = []
+    if my_transforms is not None:
+        args = my_transforms.split(",")
+        for arg in args:
+            if arg == "PadToMaxSize":
+                height = 1359
+                width = 890
+                t_list.append(PadToMaxSize(width, height))
+    else:
+        t_list.append(transforms.Resize(256, 256))
+    t_list.append(transforms.ToTensor())
+
+    print("Transforms being applied:", t_list)
+    transform = transforms.Compose(t_list)
 
     datasets = {split: CustomDataset(data_dir, label_path, split, transform) for split in ['train', 'val', 'test']}
     samplers = {split: create_balanced_sampler(datasets[split]) for split in ['train', 'val', 'test']}

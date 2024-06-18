@@ -1,5 +1,6 @@
 # transforms.py: Image transformations and augmentations using torchvision.
 from torchvision import transforms
+import torchvision.transforms.functional as TF
 
 # ResNet Transformations
 # For ResNet, images are typically resized to 256x256 pixels, then center-cropped to 224x224 pixels to match the input
@@ -47,4 +48,16 @@ simclr_transforms = transforms.Compose([
 
 # Note: The actual application of these transformations would be in the data loading process, specifically when
 # initializing the dataset instances for training, validation, and testing.
+
+class PadToMaxSize:
+    def __init__(self, max_width, max_height):
+        self.max_width = max_width
+        self.max_height = max_height
+
+    def __call__(self, img):
+        width, height = img.size
+        pad_width = (self.max_width - width) // 2
+        pad_height = (self.max_height - height) // 2
+        padding = (pad_width, pad_height, self.max_width - width - pad_width, self.max_height - height - pad_height)
+        return TF.pad(img, padding, fill=(255, 255, 255))
 

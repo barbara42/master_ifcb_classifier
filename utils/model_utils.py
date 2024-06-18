@@ -9,6 +9,7 @@ from torchvision import models
 import os
 from datetime import datetime
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 # def save_model(model, path, model_name, class_names):
@@ -81,41 +82,59 @@ def get_model_architecture(model_name):
 # or any custom models defined elsewhere. The save and load functions assume the models are saved and loaded
 # using PyTorch's state_dict format, which is a common practice for PyTorch models.
 
-def train_model(model, dataloaders, criterion, optimizer, num_epochs=10):
+def train_model(model, dataloaders, criterion, optimizer, num_epochs=10, output_dir="."):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     print("training model")
     model.train()
     train_loader = dataloaders["train"]
     # TODO: put in loading bar 
+    train_accs = []
+    train_losses = []
+    val_accs = []
+    val_losses = []
+    val_epochs = []
     for epoch in range(num_epochs):
         running_loss = 0.0
+        correct = 0
+        total = 0
         for images, labels in tqdm(train_loader):
             images = images.to(device)
             labels = labels.to(device)
-            print("1")
             optimizer.zero_grad()
-            print("2")
             outputs = model(images)
-            print("3")
             loss = criterion(outputs, labels)
-            print("4")
             loss.backward()
-            print("5")
             optimizer.step()
-            print("6")
             running_loss += loss.item()
-            print("7")
-        print(f'Epoch {epoch+1}, Loss: {running_loss/len(train_loader)}')
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+        accuracy = 100 * correct / total
+        train_accs.append(accuracy)
+        train_losses.append(running_loss/len(train_loader))
+        print(f'Epoch {epoch+1}, Loss: {running_loss/len(train_loader)}, Accuracy: {accuracy}')
 
         # Validate every 5 epochs
         if (epoch + 1) % 5 == 0:
+            val_epochs.append(epoch)
             print("Validating...")
-            validate_model(model, dataloaders["val"], criterion)
-    
-    # TODO: create and save plot of loss over training epochs
+            val_acc, val_loss = validate_model(model, dataloaders["val"], criterion)
+            val_accs.append(val_acc)
+            val_losses.append(val_loss)
 
+    fig, ax = plt.subplots()
+    ax.plot(range(num_epochs), train_accs, label="training accuracy", c="green")
+    ax.plot(val_epochs, val_accs, label="validation accuracy", c="red")
+    plt.savefig(output_dir + "/training_acc.png")
+
+    fig, ax = plt.subplots()
+    ax.plot(range(num_epochs), train_losses, label="training loss", c="green")
+    ax.plot(val_epochs, val_losses, label="validation loss", c="red")
+    plt.savefig(output_dir + "/training_loss.png")
+    
 def validate_model(model, val_loader, criterion):
+    # returns accuracy, loss
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model.eval()
@@ -134,6 +153,7 @@ def validate_model(model, val_loader, criterion):
             correct += (predicted == labels).sum().item()
     accuracy = 100 * correct / total
     print(f'Validation Loss: {val_loss/len(val_loader)}, Accuracy: {accuracy}%')
+    return accuracy, val_loss/len(val_loader)
 
 def generate_unique_model_name(base_name="model"):
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")

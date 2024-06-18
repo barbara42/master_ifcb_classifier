@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 
 
-def model_factory(model_name, pretrained=True, num_classes=2):
+def model_factory(model_name, pretrained=True, num_classes=2, input_size=[3, 256, 256]):
     """
     Factory method to initialize and return the requested model architecture with pre-trained weights.
 
@@ -26,6 +26,7 @@ def model_factory(model_name, pretrained=True, num_classes=2):
     if model_name == 'resnet':
         #model = models.resnet50(pretrained=pretrained)
         #model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1, device=device)
+        # TODO: change input size?? confused tbh cause it was working with any input size
         model = models.resnet18(weights='IMAGENET1K_V1')
         num_ftrs = model.fc.in_features
         # Here the size of each output sample is set to 2.

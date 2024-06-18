@@ -29,6 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_dir', type=str, required=True, help='Directory to save output')
     parser.add_argument('--min_data_points', type=int, default=3, help='Minimum data points per class')
     parser.add_argument('--num_workers', type=int, default=1, help='number of workers for the dataloader')
+    parser.add_argument('--transforms', type=str, default="", help='')
 
     args = parser.parse_args()
 
@@ -39,21 +40,23 @@ if __name__ == '__main__':
     output_dir = args.output_dir
     min_data_points = args.min_data_points
     num_workers = args.num_workers
+    my_transforms = args.transforms
 
     print("loading data...")
-    dataloaders = get_dataloaders(data_dir, label_path, batch_size=32, num_workers=num_workers)
+    dataloaders = get_dataloaders(data_dir, label_path, batch_size=32, num_workers=num_workers, transforms=my_transforms)
 
     print("loading model...")
     num_classes = dataloaders['train'].dataset.num_classes()
     print("num classes:", num_classes)
-    model = model_factory(model_name, num_classes=num_classes)
+    input_size = dataloaders["train"].dataset[0][0].size()
+    model = model_factory(model_name, num_classes=num_classes, input_size=input_size)
 
     # Define loss function and optimizer
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)  # Adjust as necessary
 
     print("training model...")
-    train_model(model=model, dataloaders=dataloaders, criterion=criterion, optimizer=optimizer, num_epochs=10)
+    train_model(model=model, dataloaders=dataloaders, criterion=criterion, optimizer=optimizer, num_epochs=10, output_dir=output_dir)
 
     print("saving model...")
     unique_model_name = generate_unique_model_name(base_name=model_name)
