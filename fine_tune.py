@@ -29,7 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_dir', type=str, required=True, help='Directory to save output')
     parser.add_argument('--min_data_points', type=int, default=3, help='Minimum data points per class')
     parser.add_argument('--num_workers', type=int, default=1, help='number of workers for the dataloader')
-    parser.add_argument('--transforms', type=str, default="", help='')
+    parser.add_argument('--transforms', type=str, default="", help='Options: PadToMaxSize')
 
     args = parser.parse_args()
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     my_transforms = args.transforms
 
     print("loading data...")
-    dataloaders = get_dataloaders(data_dir, label_path, batch_size=32, num_workers=num_workers, transforms=my_transforms)
+    dataloaders = get_dataloaders(data_dir, label_path, batch_size=32, num_workers=num_workers, my_transforms=my_transforms)
 
     print("loading model...")
     num_classes = dataloaders['train'].dataset.num_classes()
