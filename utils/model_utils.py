@@ -95,6 +95,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=10, output_
     val_losses = []
     val_epochs = []
     for epoch in range(num_epochs):
+        model.train()
         running_loss = 0.0
         correct = 0
         total = 0
