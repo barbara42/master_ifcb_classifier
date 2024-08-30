@@ -117,7 +117,7 @@ def get_dataloaders(data_dir, label_path, batch_size=32, num_workers=1, my_trans
                 width = 890
                 t_list.append(PadToMaxSize(width, height))
     else:
-        t_list.append(transforms.Resize(256, 256))
+        t_list.append(transforms.Resize([256, 256]))
     t_list.append(transforms.ToTensor())
 
     print("Transforms being applied:", t_list)
