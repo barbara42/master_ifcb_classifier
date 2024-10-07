@@ -357,7 +357,7 @@ data_root_directories = ["dir/ImageNet1k", "dir/WHOI", "dir/MGL1704"]
 MEAN=[0.485, 0.456, 0.406]
 STD=[0.229, 0.224, 0.225]
 
-image_size = 224
+image_size = 112
 
 # no augmentations 
 train_transform = torchvision.transforms.Compose(
@@ -382,7 +382,7 @@ valid_and_test_transform = transforms.Compose(
 train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
 val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
 
-batch_size = 512
+batch_size = 256
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
