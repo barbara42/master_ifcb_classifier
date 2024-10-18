@@ -431,6 +431,9 @@ scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 
 # load up checkpoint from old training loop 
 PATH = args.checkpoint
+# get model_save_dir and model_save_name from checkpoint file 
+# model_save_dir 
+# model_save_name
 checkpoint = torch.load(PATH, weights_only=True)
 model.load_state_dict(checkpoint['model_state_dict'])
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
