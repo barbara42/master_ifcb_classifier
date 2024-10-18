@@ -403,6 +403,8 @@ mlp = 123
 heads = 3
 model = VisionTransformer(n_channels=3, nout=1000, img_size=image_size, patch_size=8,
                           dim=width, attn_dim=64, mlp_dim=mlp, num_heads=heads, num_layers=layers).cuda()
+# use 2 gpus for data parallelization 
+model = nn.DataParallel(model, device_ids=[0, 1])
 
 criterion = nn.CrossEntropyLoss()
 

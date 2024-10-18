@@ -21,7 +21,8 @@ import tqdm
 import torch.optim as optim
 from utils.model_utils import save_model
 import torch.cuda.amp as amp
-
+from datetime import datetime
+import os
 
 #### ViT Architecture #####
 class AttentionHead(nn.Module):
@@ -380,8 +381,13 @@ valid_and_test_transform = transforms.Compose(
     ]
 )
 
-train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
-val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
+# ImageNet1k dataset 
+# train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
+# val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
+
+# testing with CIFAR10 dataset
+train_dataset = torchvision.datasets.CIFAR10(train=True, root='data', transform=train_transform, download=True)
+val_dataset = torchvision.datasets.CIFAR10(train=False, root='data', transform=valid_and_test_transform)
 
 batch_size = 128
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
@@ -413,9 +419,14 @@ scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 # # uncomment for mixed precision training 
 # scaler = amp.GradScaler()
 
+# create output directory 
+now = datetime.now()
+dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
+model_save_name = "vitS_ImageNet"
+model_save_dir = f'/home/birdy/meng_thesis/code/master_ifcb_classifier/output/{model_save_name}_{dt_string}'
+os.mkdir(model_save_dir)
+
 #### training loop ########
-model_save_dir = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output'
-model_save_name = "vitS_ImageNet_test"
 train_epochs = []
 train_losses = []
 train_accs = []
@@ -463,9 +474,29 @@ for epoch in range(NUM_EPOCHS):
     train_epochs.append(epoch)
     train_losses.append(train_loss)
     train_accs.append(train_acc)
+    
     if train_acc > best_train_acc:
         # save the current model and weights 
-        save_model(model, model_save_dir, model_name=model_save_name)
+        save_model(model, model_save_dir, model_name=f"{model_save_name}_best")
+        best_train_acc = train_acc
+    
+    # checkpointing to continue training when jobs time out
+    PATH = os.path.join(model_save_dir, model_save_name + '.pt') 
+    torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'scheduler_state_dict': scheduler.state_dict(),
+            'loss': train_loss,
+            'train_epochs': train_epochs,
+            'train_losses': train_losses,
+            'train_accs': train_accs,
+            'val_epochs': val_epochs,
+            'val_losses': val_losses,
+            'val_accs': val_accs, 
+            'best_train_acc': best_train_acc
+            }, PATH)
+    
     # validation
     with torch.no_grad():
         if epoch % 10 == 0:

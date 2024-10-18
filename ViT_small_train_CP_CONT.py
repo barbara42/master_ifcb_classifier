@@ -1,4 +1,6 @@
 # Goal:
+# CONTINUING TRAINING with a checkpoint from a previous training loop 
+
 # this script trains three ViT-12L-3H models from scratch
 # first with ImageNet1k Data 
 # then with WHOI Plankton Data 
@@ -21,7 +23,15 @@ import tqdm
 import torch.optim as optim
 from utils.model_utils import save_model
 import torch.cuda.amp as amp
+from datetime import datetime
+import os
+import argparse
 
+# add commandline params to specify which model checkpoint to load 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description="Train a model on a dataset from an existing checkpoint")
+parser.add_argument("--checkpoint", type=str, required=True, help="path to the checkpoint to load")
+args = parser.parse_args()
 
 #### ViT Architecture #####
 class AttentionHead(nn.Module):
@@ -380,8 +390,13 @@ valid_and_test_transform = transforms.Compose(
     ]
 )
 
-train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
-val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
+# ImageNet1k dataset 
+# train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
+# val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
+
+# testing with CIFAR10 dataset
+train_dataset = torchvision.datasets.CIFAR10(train=True, root='data', transform=train_transform, download=True)
+val_dataset = torchvision.datasets.CIFAR10(train=False, root='data', transform=valid_and_test_transform)
 
 batch_size = 128
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
@@ -413,17 +428,26 @@ scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 # # uncomment for mixed precision training 
 # scaler = amp.GradScaler()
 
+
+# load up checkpoint from old training loop 
+PATH = args.checkpoint
+checkpoint = torch.load(PATH, weights_only=True)
+model.load_state_dict(checkpoint['model_state_dict'])
+optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+last_epoch = checkpoint['epoch']
+loss = checkpoint['loss']
+train_epochs = checkpoint['train_epochs']
+train_losses = checkpoint['train_losses']
+train_accs = checkpoint['train_accs']
+val_epochs = checkpoint['val_epochs']
+val_losses = checkpoint['val_losses']
+val_accs = checkpoint['val_accs']
+best_train_acc = checkpoint['best_train_acc']
+
 #### training loop ########
-model_save_dir = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output'
-model_save_name = "vitS_ImageNet_test"
-train_epochs = []
-train_losses = []
-train_accs = []
-val_epochs = []
-val_losses = []
-val_accs = []
-best_train_acc = 0
-for epoch in range(NUM_EPOCHS): 
+model.train()
+for epoch in range(last_epoch, NUM_EPOCHS): 
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
     for img, labels in tqdm.tqdm(train_dataloader):
@@ -463,6 +487,15 @@ for epoch in range(NUM_EPOCHS):
     train_epochs.append(epoch)
     train_losses.append(train_loss)
     train_accs.append(train_acc)
+    # checkpointing to continue training when jobs time out
+    PATH = os.path.join(model_save_dir, model_save_name + '.pt') 
+    torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': train_loss,
+            }, PATH)
+    
     if train_acc > best_train_acc:
         # save the current model and weights 
         save_model(model, model_save_dir, model_name=model_save_name)
