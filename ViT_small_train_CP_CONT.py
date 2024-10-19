@@ -30,7 +30,8 @@ import argparse
 # add commandline params to specify which model checkpoint to load 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Train a model on a dataset from an existing checkpoint")
-parser.add_argument("--checkpoint", type=str, required=True, help="path to the checkpoint to load")
+parser.add_argument("--model_save_dir", type=str, required=True, help="path to the folder containing the checkpoint to load")
+parser.add_argument("--model_save_name", type=str, required=True, help="name of checkpoint file")
 args = parser.parse_args()
 
 #### ViT Architecture #####
@@ -391,12 +392,12 @@ valid_and_test_transform = transforms.Compose(
 )
 
 # ImageNet1k dataset 
-# train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
-# val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
+train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
+val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
 
-# testing with CIFAR10 dataset
-train_dataset = torchvision.datasets.CIFAR10(train=True, root='data', transform=train_transform, download=True)
-val_dataset = torchvision.datasets.CIFAR10(train=False, root='data', transform=valid_and_test_transform)
+# # testing with CIFAR10 dataset
+# train_dataset = torchvision.datasets.CIFAR10(train=True, root='data', transform=train_transform, download=True)
+# val_dataset = torchvision.datasets.CIFAR10(train=False, root='data', transform=valid_and_test_transform)
 
 batch_size = 128
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
@@ -430,10 +431,9 @@ scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 
 
 # load up checkpoint from old training loop 
-PATH = args.checkpoint
-# get model_save_dir and model_save_name from checkpoint file 
-# model_save_dir 
-# model_save_name
+model_save_dir = args.model_save_dir
+model_save_name = args.model_save_name
+PATH = f"{model_save_dir}/{model_save_name}.pt"
 checkpoint = torch.load(PATH, weights_only=True)
 model.load_state_dict(checkpoint['model_state_dict'])
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])

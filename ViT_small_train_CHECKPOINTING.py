@@ -382,12 +382,12 @@ valid_and_test_transform = transforms.Compose(
 )
 
 # ImageNet1k dataset 
-# train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
-# val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
+train_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/train", transform=train_transform)
+val_dataset = torchvision.datasets.ImageFolder("/nobackup/projects/public/ImageNet/ILSVRC2012/val", transform=valid_and_test_transform)
 
-# testing with CIFAR10 dataset
-train_dataset = torchvision.datasets.CIFAR10(train=True, root='data', transform=train_transform, download=True)
-val_dataset = torchvision.datasets.CIFAR10(train=False, root='data', transform=valid_and_test_transform)
+# # testing with CIFAR10 dataset
+# train_dataset = torchvision.datasets.CIFAR10(train=True, root='data', transform=train_transform, download=True)
+# val_dataset = torchvision.datasets.CIFAR10(train=False, root='data', transform=valid_and_test_transform)
 
 batch_size = 128
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
