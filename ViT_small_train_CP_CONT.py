@@ -437,16 +437,28 @@ PATH = f"{model_save_dir}/{model_save_name}.pt"
 checkpoint = torch.load(PATH)
 model.load_state_dict(checkpoint['model_state_dict'])
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
 last_epoch = checkpoint['epoch']
-loss = checkpoint['loss']
-train_epochs = checkpoint['train_epochs']
-train_losses = checkpoint['train_losses']
-train_accs = checkpoint['train_accs']
-val_epochs = checkpoint['val_epochs']
-val_losses = checkpoint['val_losses']
-val_accs = checkpoint['val_accs']
-best_train_acc = checkpoint['best_train_acc']
+
+# create scheduler - DELETE AFTER 
+scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS - last_epoch)
+train_epochs = []
+train_losses = []
+train_accs = []
+val_epochs = []
+val_losses = []
+val_accs = []
+best_train_acc = 0
+
+# scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+# last_epoch = checkpoint['epoch']
+# loss = checkpoint['loss']
+# train_epochs = checkpoint['train_epochs']
+# train_losses = checkpoint['train_losses']
+# train_accs = checkpoint['train_accs']
+# val_epochs = checkpoint['val_epochs']
+# val_losses = checkpoint['val_losses']
+# val_accs = checkpoint['val_accs']
+# best_train_acc = checkpoint['best_train_acc']
 
 #### training loop ########
 model.train()
@@ -496,7 +508,15 @@ for epoch in range(last_epoch, NUM_EPOCHS):
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
+            'scheduler_state_dict': scheduler.state_dict(),
             'loss': train_loss,
+            'train_epochs': train_epochs,
+            'train_losses': train_losses,
+            'train_accs': train_accs,
+            'val_epochs': val_epochs,
+            'val_losses': val_losses,
+            'val_accs': val_accs, 
+            'best_train_acc': best_train_acc
             }, PATH)
     
     if train_acc > best_train_acc:
