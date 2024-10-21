@@ -437,34 +437,16 @@ PATH = f"{model_save_dir}/{model_save_name}.pt"
 checkpoint = torch.load(PATH)
 model.load_state_dict(checkpoint['model_state_dict'])
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
 last_epoch = checkpoint['epoch']
-
-# create scheduler - DELETE AFTER 
-scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS - last_epoch)
-# training session one results 
-train_epochs = [0, 1, 2, 3, 4]
-train_losses = [6.354431229453267, 6.0788248487854, 5.851428486842154, 5.429045491957784, 5.306003853149112]
-train_accs = [0.01711330373011481, 0.03997293092937923, 0.05606529047349187, 0.06799503889812959, 0.07777284304092176]
-val_epochs = [0]
-val_losses = [6.0788248487854]
-val_accs = [0.029340000002384185]
-# training session two results 
-train_epochs = train_epochs + [5, 6, 7, 8, 9]
-train_losses = train_losses + [5.207589335952186, 5.123612546245587,  5.05372874623884, 4.994263186848546, 4.9369434863885004]
-train_accs = train_accs + [0.08658902391335399, 0.0942546912308109, 0.10091112243763081, 0.10667461775092889, 0.11233039876928781]
-best_train_acc = max(train_accs)
-last_epoch = 9
-
-# scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-# last_epoch = checkpoint['epoch']
-# loss = checkpoint['loss']
-# train_epochs = checkpoint['train_epochs']
-# train_losses = checkpoint['train_losses']
-# train_accs = checkpoint['train_accs']
-# val_epochs = checkpoint['val_epochs']
-# val_losses = checkpoint['val_losses']
-# val_accs = checkpoint['val_accs']
-# best_train_acc = checkpoint['best_train_acc']
+loss = checkpoint['loss']
+train_epochs = checkpoint['train_epochs']
+train_losses = checkpoint['train_losses']
+train_accs = checkpoint['train_accs']
+val_epochs = checkpoint['val_epochs']
+val_losses = checkpoint['val_losses']
+val_accs = checkpoint['val_accs']
+best_train_acc = checkpoint['best_train_acc']
 
 #### training loop ########
 model.train()
@@ -508,6 +490,10 @@ for epoch in range(last_epoch+1, NUM_EPOCHS):
     train_epochs.append(epoch)
     train_losses.append(train_loss)
     train_accs.append(train_acc)
+    if train_acc > best_train_acc:
+        # save the current model and weights 
+        save_model(model, model_save_dir, model_name=model_save_name)
+        best_train_acc = train_acc
     # checkpointing to continue training when jobs time out
     PATH = os.path.join(model_save_dir, model_save_name + '.pt') 
     torch.save({
@@ -525,9 +511,6 @@ for epoch in range(last_epoch+1, NUM_EPOCHS):
             'best_train_acc': best_train_acc
             }, PATH)
     
-    if train_acc > best_train_acc:
-        # save the current model and weights 
-        save_model(model, model_save_dir, model_name=model_save_name)
     # validation
     with torch.no_grad():
         if epoch % 10 == 0:
