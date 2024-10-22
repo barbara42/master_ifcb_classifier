@@ -129,7 +129,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25, save_chec
         print(f'Best val Acc: {best_acc:4f}')
 
         # load best model weights
-        model.load_state_dict(torch.load(best_model_params_path))
+        # model.load_state_dict(torch.load(best_model_params_path))
     return model
 
 def get_validation_results(model, dataloader):
