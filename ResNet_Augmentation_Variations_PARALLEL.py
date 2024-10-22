@@ -222,6 +222,7 @@ class_names = train_dataset.classes
 # train_dataset = torch.utils.data.Subset(train_dataset, train_idxs)
 # val_dataset = torch.utils.data.Subset(val_dataset, test_idxs)
 
+NUM_EPOCHS = 30
 BATCH_SIZE = 32
 dataloaders  = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, num_workers=4, sampler=None, shuffle=True, drop_last=True),
                 'val': torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, drop_last=True)}
@@ -240,7 +241,7 @@ criterion = nn.CrossEntropyLoss()
 
 # Observe that all parameters are being optimized
 # optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
-optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001, momentum=0.9)
+optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
 
 # Decay LR by a factor of 0.1 every 7 epochs
 # exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
@@ -252,14 +253,13 @@ model_name = 'ResNet18_Basic_batchsize36'
 DEST = f'/home/birdy/meng_thesis/code/master_ifcb_classifier/output/{model_name}'
 os.mkdir(DEST)
 
-num_epochs = 30
 model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                       num_epochs=num_epochs, save_checkpoints=True, DEST=DEST, model_name=model_name)
+                       num_epochs=NUM_EPOCHS, save_checkpoints=True, DEST=DEST, model_name=model_name)
 # save trained model to google drive
 dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 PATH = f"{DEST}/{model_name}-final-{dt_string}.pt"
 #torch.save(model_ft.state_dict(), PATH)
-save_checkpoint(model_ft, optimizer_ft, PATH, num_epochs)
+save_checkpoint(model_ft, optimizer_ft, PATH, NUM_EPOCHS)
 
 # plot training and validation accuracy and loss
 fig, ax = plt.subplots()
