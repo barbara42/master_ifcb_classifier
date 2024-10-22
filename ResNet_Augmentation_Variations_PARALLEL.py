@@ -222,7 +222,7 @@ class_names = train_dataset.classes
 # train_dataset = torch.utils.data.Subset(train_dataset, train_idxs)
 # val_dataset = torch.utils.data.Subset(val_dataset, test_idxs)
 
-BATCH_SIZE = 512
+BATCH_SIZE = 32
 dataloaders  = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, num_workers=4, sampler=None, shuffle=True, drop_last=True),
                 'val': torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, drop_last=True)}
 
@@ -239,14 +239,16 @@ model_ft = model_ft.to(device)
 criterion = nn.CrossEntropyLoss()
 
 # Observe that all parameters are being optimized
-optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
+# optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
+optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001, momentum=0.9)
 
 # Decay LR by a factor of 0.1 every 7 epochs
-exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
+# exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
+exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer_ft, T_max=NUM_EPOCHS, eta_min=1e-6)
 
 ### TRAIN MODEL 
 
-model_name = 'ResNet18_Basic'
+model_name = 'ResNet18_Basic_batchsize36'
 DEST = f'/home/birdy/meng_thesis/code/master_ifcb_classifier/output/{model_name}'
 os.mkdir(DEST)
 
