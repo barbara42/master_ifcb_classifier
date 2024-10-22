@@ -251,7 +251,8 @@ exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer_ft, T_max=NUM_EPOCHS
 ### TRAIN MODEL 
 
 model_name = f'ResNet18_Basic_batchsize{BATCH_SIZE}'
-DEST = f'/home/birdy/meng_thesis/code/master_ifcb_classifier/output/{model_name}'
+dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+DEST = f'/home/birdy/meng_thesis/code/master_ifcb_classifier/output/{model_name}_{dt_string}'
 os.mkdir(DEST)
 
 model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
