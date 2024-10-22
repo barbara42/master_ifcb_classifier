@@ -26,7 +26,7 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 cudnn.benchmark = True
 plt.ion()   # interactive mode
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # list devices available 
 print("Cuda Device Count:", torch.cuda.device_count())
@@ -223,9 +223,10 @@ class_names = train_dataset.classes
 # val_dataset = torch.utils.data.Subset(val_dataset, test_idxs)
 
 NUM_EPOCHS = 30
-BATCH_SIZE = 32
-dataloaders  = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, num_workers=4, sampler=None, shuffle=True, drop_last=True),
-                'val': torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, drop_last=True)}
+BATCH_SIZE = 128
+NUM_WORKERS = 8
+dataloaders  = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, sampler=None, shuffle=True, drop_last=True),
+                'val': torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, drop_last=True)}
 
 dataset_sizes = {x: len(dataloaders[x].dataset) for x in ['train', 'val']}
 
@@ -234,7 +235,7 @@ print(f"{len(class_names)} classes {dataset_sizes}")
 model_ft = models.resnet18(weights='IMAGENET1K_V1')
 num_ftrs = model_ft.fc.in_features
 model_ft.fc = nn.Linear(num_ftrs, len(class_names))
-model_ft = nn.DataParallel(model_ft)
+model_ft = nn.DataParallel(model_ft, device_ids=[0, 1, 2, 3])
 model_ft = model_ft.to(device)
 
 criterion = nn.CrossEntropyLoss()
@@ -249,7 +250,7 @@ exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer_ft, T_max=NUM_EPOCHS
 
 ### TRAIN MODEL 
 
-model_name = 'ResNet18_Basic_batchsize36'
+model_name = f'ResNet18_Basic_batchsize{BATCH_SIZE}'
 DEST = f'/home/birdy/meng_thesis/code/master_ifcb_classifier/output/{model_name}'
 os.mkdir(DEST)
 
