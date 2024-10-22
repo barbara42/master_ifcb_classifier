@@ -224,7 +224,7 @@ class_names = train_dataset.classes
 
 NUM_EPOCHS = 30
 BATCH_SIZE = 128
-NUM_WORKERS = 8
+NUM_WORKERS = 4
 dataloaders  = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, sampler=None, shuffle=True, drop_last=True),
                 'val': torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, drop_last=True)}
 
