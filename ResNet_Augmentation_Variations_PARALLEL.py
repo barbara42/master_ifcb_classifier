@@ -231,7 +231,7 @@ dataset_sizes = {x: len(dataloaders[x].dataset) for x in ['train', 'val']}
 print(f"{len(class_names)} classes {dataset_sizes}")
 
 model_ft = models.resnet18(weights='IMAGENET1K_V1')
-num_ftrs = model_ft.fc.in_features]
+num_ftrs = model_ft.fc.in_features
 model_ft.fc = nn.Linear(num_ftrs, len(class_names))
 model_ft = nn.DataParallel(model_ft)
 model_ft = model_ft.to(device)
