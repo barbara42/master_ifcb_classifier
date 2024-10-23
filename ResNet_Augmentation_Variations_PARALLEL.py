@@ -107,7 +107,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25, save_chec
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
                 if phase == 'train':
-                    scheduler.step(epoch_loss) # for ReduceLROnPlateau, the previous epoch_loss will be the val loss 
+                    scheduler.step() 
 
                 epoch_loss = running_loss / dataset_sizes[phase]
                 epoch_acc = running_corrects.double() / dataset_sizes[phase]
@@ -209,7 +209,7 @@ data_dir = '/home/birdy/meng_thesis/data/split_MGL1704_data'
 ##########################################################################
 
 # LOAD UP MGL1704 data WITH AUGMIX
-train_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/train", data_transforms["train_basic"])
+train_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/train", data_transforms["train_augmix"])
 val_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/test", data_transforms["val"])
 class_names = train_dataset.classes
 
@@ -246,12 +246,12 @@ optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
 
 # Decay LR by a factor of 0.1 every 7 epochs
 # exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
-# exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer_ft, T_max=NUM_EPOCHS, eta_min=1e-6)
-exp_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=0.1, patience=3, min_lr=1e-6)
+exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer_ft, T_max=NUM_EPOCHS, eta_min=1e-6)
+# exp_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=0.1, patience=3, min_lr=1e-6)
 
 ### TRAIN MODEL 
 
-model_name = f'ResNet18_Basic_batchsize{BATCH_SIZE}_ReduceLROnPlateau'
+model_name = f'ResNet18_AugMix_batchsize{BATCH_SIZE}_AdamCosignLR'
 dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 DEST = f'/home/birdy/meng_thesis/code/master_ifcb_classifier/output/{model_name}_{dt_string}'
 os.mkdir(DEST)
