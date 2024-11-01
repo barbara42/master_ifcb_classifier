@@ -30,6 +30,7 @@ from utils import resnet_experiment_helpers as helper
 
 BATCH_SIZE = 512
 NUM_WORKERS = 4
+EPOCHS = 30
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
 DEST_ROOT = '/nobackup/users/birdy/resnet-stage1-output'
 dataset_name = "UH"
@@ -44,7 +45,7 @@ class_names = train_dataset.classes
 NUM_CLASSES = len(train_dataset.classes)
 
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
-val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
+val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
 
 dataloaders = {
     'train': train_dataloader,
@@ -104,7 +105,7 @@ for opt in optimizers:
 
       # TRAIN
       model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
-                          num_epochs=1, save_checkpoints = False, DEST=DEST, 
+                          num_epochs=EPOCHS, save_checkpoints = True, DEST=DEST, 
                           model_name=model_name, val_fqn=5, device="cuda")
       
       # RECORD
@@ -119,7 +120,9 @@ for opt in optimizers:
       results_df = helper.record_metrics(results_df, model_name, criterion, opt, sched, learning_rate, 
                    batch_size, per_image_accuracy, per_class_accuracy, macs, wall_time, history)
       print(results_df)
+      # save dataframe 
+      results_df.to_csv(f"{DEST_ROOT}/resnet18_{dataset_name}_stage1_results.csv", index=False)
       print("")
 
 # save dataframe 
-results_df.to_csv(f"{DEST}/resnet18_{dataset_name}_stage1_results.csv", index=False)
+results_df.to_csv(f"{DEST_ROOT}/resnet18_{dataset_name}_stage1_results.csv", index=False)
