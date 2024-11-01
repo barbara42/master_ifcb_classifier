@@ -59,6 +59,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25, save_chec
         best_model_params_path = f'{DEST}/{model_name}-best.pt'
         torch.save(model.state_dict(), best_model_params_path)
         best_acc = 0.0
+        # if model does not already has history attribute, initialize it here 
         model.history = {
             'train_loss': [],
             'train_acc': [],

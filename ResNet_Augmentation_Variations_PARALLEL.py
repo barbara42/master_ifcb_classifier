@@ -159,13 +159,13 @@ def get_validation_results(model, dataloader):
 # Just normalization for validation
 image_size = 224
 
-#MGL17004 Dataset Mean and STD
-mean =  [0.4843, 0.4843, 0.4843] # each channel being the same makes sense because images are grayscale
-std = [0.0846, 0.0846, 0.0846]
+# #MGL17004 Dataset Mean and STD
+# mean =  [0.4843, 0.4843, 0.4843] # each channel being the same makes sense because images are grayscale
+# std = [0.0846, 0.0846, 0.0846]
 
-# # ImageNet mean and STD - NO NOTICABLE IMPROVEMENT 
-# mean = [0.485, 0.456, 0.406]
-# std = [0.229, 0.224, 0.225]
+# ImageNet mean and STD - NO NOTICABLE IMPROVEMENT 
+mean = [0.485, 0.456, 0.406]
+std = [0.229, 0.224, 0.225]
 
 #TODO: flesh out 
 data_transforms = {
@@ -251,7 +251,7 @@ exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer_ft, T_max=NUM_EPOCHS
 
 ### TRAIN MODEL 
 
-model_name = f'ResNet18_AugMix_batchsize{BATCH_SIZE}_AdamCosignLR'
+model_name = f'ResNet18_AugMix_batchsize{BATCH_SIZE}_AdamCosineLR'
 dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 DEST = f'/home/birdy/meng_thesis/code/master_ifcb_classifier/output/{model_name}_{dt_string}'
 os.mkdir(DEST)

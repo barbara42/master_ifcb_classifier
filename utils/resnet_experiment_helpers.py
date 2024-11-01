@@ -1,0 +1,319 @@
+# Imports
+import pandas as pd
+from tqdm import tqdm
+from datetime import datetime
+import pickle
+from collections import defaultdict
+
+
+import torch
+import torchprofile
+import torch.nn as nn
+import torch.optim as optim
+from torch.optim import lr_scheduler
+import torch.backends.cudnn as cudnn
+import numpy as np
+import torchvision
+from torchvision import datasets, models, transforms
+import matplotlib.pyplot as plt
+import time
+import os
+from PIL import Image
+from tempfile import TemporaryDirectory
+import torch.nn.functional as F
+
+
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+cudnn.benchmark = True
+# plt.ion()   # interactive mode
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def save_checkpoint(model, optimizer, save_path, epoch):
+    torch.save({
+        'model_state_dict': model.state_dict(),
+        'model_history': model.history,
+        'optimizer_state_dict': optimizer.state_dict(),
+        'epoch': epoch
+    }, save_path)
+
+def load_checkpoint(model, optimizer, load_path):
+    checkpoint = torch.load(load_path)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    epoch = checkpoint['epoch']
+    model.history = checkpoint['model_history']
+    return model, optimizer, epoch
+
+def calculate_macs(model, input_size=(3, 224, 224), device="cuda"):
+    """
+    Calculate the Multiply-Accumulate Operations (MACs) for a given model.
+
+    Args:
+        model (torch.nn.Module): The model to evaluate.
+        input_size (tuple): The input size for the model (default is (3, 224, 224) for typical image inputs).
+        device (str): Device to perform computation on ("cuda" or "cpu").
+
+    Returns:
+        float: The number of MACs in millions (for easier readability).
+    """
+    model.to(device)  # Move model to specified device
+    model.eval()  # Set model to evaluation mode
+
+    # Create a sample input tensor with the specified input size
+    sample_input = torch.randn(1, *input_size).to(device)
+
+    # Calculate MACs using torchprofile
+    with torch.no_grad():  # No gradients needed for MAC calculations
+        macs = torchprofile.profile_macs(model, args=(sample_input,))
+
+    # Convert MACs to millions for readability
+    macs_in_millions = macs / 1e6
+
+    return macs_in_millions
+
+def record_metrics(metrics_df, model_name, loss_function, optimizer, scheduler, learning_rate, 
+                   batch_size, per_image_accuracy, per_class_accuracy, MACs, wall_time, history):
+    """
+    Append a new row of metrics to the DataFrame.
+
+    Args:
+        metrics_df (pd.DataFrame): DataFrame to store metrics.
+        epoch (int): Epoch number.
+        loss_function (str): Loss function name (e.g., "Cross-Entropy").
+        optimizer (str): Optimizer name (e.g., "SGD").
+        scheduler (str): Scheduler name (e.g., "StepLR").
+        learning_rate (float): Current learning rate.
+        per_image_accuracy (float): Per-image accuracy for the epoch.
+        per_class_accuracy (float): Per-class accuracy for the epoch.
+        composite_score (float): Composite score combining per-image and per-class accuracy.
+        MACs (float): Multiply-Accumulate Operations in millions.
+        wall_time (float): Wall time for the epoch in seconds.
+
+    Returns:
+        pd.DataFrame: Updated DataFrame with the new row added.
+    """
+    new_row = {
+        'model_name': model_name,
+        'loss_function': loss_function,
+        'optimizer': optimizer,
+        'scheduler': scheduler,
+        'learning_rate': learning_rate,
+        'batch_size': batch_size,
+        'per_image_accuracy': per_image_accuracy,
+        'per_class_accuracy': per_class_accuracy,
+        'MACs': MACs,
+        'wall_time': wall_time, 
+        'history': history
+    }
+    new_row_df = pd.DataFrame([new_row])
+    metrics_df = pd.concat([metrics_df, new_row_df], ignore_index=True)
+    return metrics_df
+
+def get_opt_sched(opt, sched, model):
+  if opt == 'sgd':
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=0.0001)
+  if opt == 'adam':
+    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
+  if opt == 'adamw':
+    optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=0.01)
+
+  if sched == 'step':
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+  if sched == 'cos':
+    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=30)
+  if sched == 'ReduceLROnPlateau':
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3)
+  
+  return optimizer, scheduler
+
+def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=25, save_checkpoints = False, DEST='', model_name="ResNet", val_fqn=1, device="cpu"):
+    since = time.time()
+
+    # Create a temporary directory to save training checkpoints
+    with TemporaryDirectory() as tempdir:
+        #best_model_params_path = os.path.join(tempdir, 'best_model_params.pt')
+        best_model_params_path = f'{DEST}/{model_name}-best.pt'
+        torch.save(model.state_dict(), best_model_params_path)
+        best_acc = 0.0
+        # intialize training history if model doesn't already have it
+        if hasattr(model, 'history') == False: 
+            model.history = {
+                'train_loss': [],
+                'train_acc': [],
+                'train_class_acc': [],
+                'train_epoch_duration': [],
+                'val_epochs': [],
+                'val_loss': [],
+                'val_acc': [],
+                'val_class_acc': [],
+                'val_epoch_duration': []
+            }
+        dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+
+        for epoch in range(num_epochs):
+            print(f'Epoch {epoch}/{num_epochs - 1}')
+            print('-' * 10)
+            epoch_start_time = time.time()
+
+            # Each epoch has a training and validation phase
+            for phase in ['train', 'val']:
+                if phase == 'val' and epoch % val_fqn !=0:
+                    continue # only validate model every nth time
+                if phase == 'train':
+                    model.train()  # Set model to training mode
+                else:
+                    model.history['val_epochs'].append(epoch)
+                    model.eval()   # Set model to evaluate mode
+
+                running_loss = 0.0
+                running_corrects = 0
+                running_class_acc = 0.0
+                batch_counter = 0
+                # Iterate over data.
+                for inputs, labels in tqdm(dataloaders[phase]):
+                    batch_counter += 1
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
+
+                    # labels = torch.tensor(labels).to(device)
+
+                    # zero the parameter gradients
+                    optimizer.zero_grad()
+
+                    # print(inputs.shape)
+                    # forward
+                    # track history if only in train
+                    with torch.set_grad_enabled(phase == 'train'):
+                        outputs = model(inputs)
+                        _, preds = torch.max(outputs, 1)
+                        loss = criterion(outputs, labels)
+
+                        # backward + optimize only if in training phase
+                        if phase == 'train':
+                            loss.backward()
+                            optimizer.step()
+
+                    # statistics
+                    running_loss += loss.item() * inputs.size(0)
+                    running_corrects += torch.sum(preds == labels.data)
+                    avg_class_acc, _ = calculate_per_class_accuracy(labels.data.cpu().numpy(), preds.cpu().numpy())
+                    running_class_acc += avg_class_acc
+                if phase == 'train':
+                    if type(scheduler) == lr_scheduler.ReduceLROnPlateau:
+                        scheduler.step(running_loss)
+                    else:
+                      scheduler.step() 
+
+                epoch_loss = running_loss / len(dataloaders[phase].dataset)
+                epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
+                epoch_class_acc = running_class_acc / batch_counter
+                epoch_duration = time.time() - epoch_start_time
+
+                print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
+                model.history[f'{phase}_loss'].append(epoch_loss)
+                model.history[f'{phase}_acc'].append(epoch_acc.item())
+                model.history[f'{phase}_class_acc'].append(epoch_class_acc)
+                model.history[f'{phase}_epoch_duration'].append(epoch_duration)
+
+
+                if save_checkpoints:
+                  # write over the old checkpoint - saves mem space
+                  PATH = f"{DEST}/{model_name}-{dt_string}-checkpoint.pt"
+                  save_checkpoint(model, optimizer, PATH, epoch)
+
+
+                # deep copy the model
+                if phase == 'val' and epoch_acc > best_acc:
+                    best_acc = epoch_acc
+                    torch.save(model.state_dict(), best_model_params_path)
+
+            print()
+
+        time_elapsed = time.time() - since
+        model.history['time_elapsed'] = time_elapsed
+        print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
+        print(f'Best val Acc: {best_acc:4f}')
+
+        # load best model weights
+        # model.load_state_dict(torch.load(best_model_params_path))
+    return model
+
+def evaluate_per_class_accuracy(model, dataloader, device):
+    """
+    Calculate and record per-class accuracy for a given model on a provided dataset.
+
+    Args:
+        model (torch.nn.Module): The trained model to evaluate.
+        dataloader (torch.utils.data.DataLoader): DataLoader for the dataset to evaluate on.
+        device (torch.device): Device to perform computation on (e.g., "cuda" or "cpu").
+
+    Returns:
+        dict: Dictionary where keys are class indices and values are per-class accuracy.
+    """
+    model.eval()  # Set model to evaluation mode
+    correct_per_class = defaultdict(int)
+    total_per_class = defaultdict(int)
+
+    with torch.no_grad():  # Disable gradient calculation for evaluation
+        for inputs, labels in dataloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+
+            # Count correct predictions and total samples for each class
+            for label, pred in zip(labels, preds):
+                total_per_class[label.item()] += 1
+                if label == pred:
+                    correct_per_class[label.item()] += 1
+
+    # Calculate per-class accuracy
+    per_class_accuracy = {
+        class_idx: (correct_per_class[class_idx] / total_per_class[class_idx] * 100 if total_per_class[class_idx] > 0 else 0)
+        for class_idx in total_per_class
+    }
+    per_class_accuracy_avg = sum(per_class_accuracy.values()) / len(per_class_accuracy)
+
+    return per_class_accuracy_avg, per_class_accuracy
+
+
+def calculate_per_class_accuracy(y_true, y_pred):
+    # Initialize dictionaries to store correct counts and total counts per class
+    correct_counts = defaultdict(int)
+    total_counts = defaultdict(int)
+    
+    # Loop through each true and predicted label pair
+    for true, pred in zip(y_true, y_pred):
+        total_counts[true] += 1  # Increment total count for the true class
+        if true == pred:
+            correct_counts[true] += 1  # Increment correct count if prediction matches the true label
+    
+    # Calculate per-class accuracy
+    per_class_accuracy = {cls: correct_counts[cls] / total_counts[cls] for cls in total_counts if total_counts[cls] > 0}
+    
+    # Calculate average per-class accuracy
+    average_per_class_accuracy = np.mean(list(per_class_accuracy.values()))
+    
+    return average_per_class_accuracy, per_class_accuracy
+
+def get_validation_results(model, dataloader):
+    was_training = model.training
+    model.eval()
+
+    true_vals = []
+    pred_vals = []
+    #device = "cpu"
+    with torch.no_grad():
+        for inputs, labels in tqdm(dataloader):
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+
+            true_vals.append(labels)
+            pred_vals.append(preds)
+    return true_vals, pred_vals
