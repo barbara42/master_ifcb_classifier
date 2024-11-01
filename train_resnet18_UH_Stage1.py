@@ -30,7 +30,8 @@ from utils import resnet_experiment_helpers as helper
 
 BATCH_SIZE = 512
 NUM_WORKERS = 4
-DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
+#DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
+DEST_ROOT = '/nobackup/users/birdy/resnet-stage1-output'
 dataset_name = "UH"
 data_dir = '/home/birdy/meng_thesis/data/split_MGL1704_data'
 
@@ -97,6 +98,7 @@ for opt in optimizers:
       # Configure the classifier layer to match the number of classes in the dataset.
       num_ftrs = model.fc.in_features
       model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
+      model = nn.DataParallel(model, device_ids=[0, 1, 2, 3])
       model= model.to(device)
       optimizer, scheduler = helper.get_opt_sched(opt, sched, model)
 
