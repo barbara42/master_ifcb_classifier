@@ -317,3 +317,39 @@ def get_validation_results(model, dataloader):
             true_vals.append(labels)
             pred_vals.append(preds)
     return true_vals, pred_vals
+
+# ImageNet mean and STD - NO NOTICABLE IMPROVEMENT 
+mean = [0.485, 0.456, 0.406]
+std = [0.229, 0.224, 0.225]
+data_transforms = {
+    'train_none': transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+    ]),
+    'train_basic': transforms.Compose([
+        transforms.Resize((224,224)),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+    ]),
+    'train_augmix': transforms.Compose([
+        transforms.Resize((224,224)),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(45),
+        transforms.AugMix(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+    ]),
+    'val': transforms.Compose([
+        transforms.Resize((224,224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+    ]),
+    'test': transforms.Compose([
+        transforms.Resize([224,224]),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+    ])
+}
