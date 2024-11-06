@@ -56,42 +56,21 @@ results_df = pd.DataFrame(columns=[
 # Data Augmentations
 # PadToSize - DONE
 # AugMix - DONE
-# train_aug_key = ['train_padToSize', 'train_augmix']
-# val_aug_key = ['val_padToSize', 'val']
+train_aug_key = ['train_padToSize', 'train_augmix']
+val_aug_key = ['val_padToSize', 'val']
 
-# for t, v in zip(train_aug_key, val_aug_key):
-#     # load datasets
-#     pass
-
-###########################################################################
-############### CutMix and MixUp ######################
-###########################################################################
-# load up train and val dataloaders 
-train_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/train", helper.data_transforms["train_basic"])
-val_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/test", helper.data_transforms["val"])
-class_names = train_dataset.classes
-NUM_CLASSES = len(train_dataset.classes)
-
-
-# Requires a different dataloader set 
-cutmix = v2.CutMix(num_classes=NUM_CLASSES)
-mixup = v2.MixUp(num_classes=NUM_CLASSES)
-
-def cutmix_collate_fn(batch):
-    return cutmix(*default_collate(batch))
-
-def mixup_collate_fn(batch):
-    return mixup(*default_collate(batch))
-
-for fn_string, collate_fn in zip(["cutmix", "mixup"],[cutmix_collate_fn, mixup_collate_fn]):
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, collate_fn=collate_fn)
+for t, v in zip(train_aug_key, val_aug_key):
+    # load up train and val dataloaders 
+    train_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/train", helper.data_transforms["train_basic"])
+    val_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/test", helper.data_transforms["val"])
+    class_names = train_dataset.classes
+    NUM_CLASSES = len(train_dataset.classes)
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     val_dataloader = torch.utils.data.DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
-
     dataloaders = {
         'train': train_dataloader,
         'val': val_dataloader
     }
-
     # Load the pretrained ResNet18 model.
     model = models.resnet18(weights='IMAGENET1K_V1')
     # Configure the classifier layer to match the number of classes in the dataset.
@@ -112,7 +91,7 @@ for fn_string, collate_fn in zip(["cutmix", "mixup"],[cutmix_collate_fn, mixup_c
     crit = "cross_entropy"
 
     # TRAIN
-    model_name = f"resnet18-{dataset_name}-{fn_string}"
+    model_name = f"resnet18-{dataset_name}-{t}"
     DEST = f"{DEST_ROOT}/{model_name}"
     os.makedirs(DEST, exist_ok=True)
     model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
@@ -133,11 +112,3 @@ for fn_string, collate_fn in zip(["cutmix", "mixup"],[cutmix_collate_fn, mixup_c
     results_df.to_csv(f"{DEST_ROOT}/{dataset_name}_results.csv", index=False)
     print(results_df)
     print("")
-
-# save df
-results_df.to_csv(f"{DEST_ROOT}/{dataset_name}_results.csv", index=False)
-
-##########################################################################
-############### Dropout Levels ###########################################
-##########################################################################
-
