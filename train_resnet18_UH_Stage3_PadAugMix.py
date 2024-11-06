@@ -4,8 +4,6 @@ from tqdm import tqdm
 from datetime import datetime
 import pickle
 import torch
-from torchvision.transforms import v2
-from torch.utils.data import default_collate
 
 import torchprofile
 import torch.nn as nn
