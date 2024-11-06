@@ -272,7 +272,7 @@ def evaluate_per_class_accuracy(model, dataloader, device):
 
     # Calculate per-class accuracy
     per_class_accuracy = {
-        class_idx: (correct_per_class[class_idx] / total_per_class[class_idx] * 100 if total_per_class[class_idx] > 0 else 0)
+        class_idx: (correct_per_class[class_idx] / total_per_class[class_idx] if total_per_class[class_idx] > 0 else 0)
         for class_idx in total_per_class
     }
     per_class_accuracy_avg = sum(per_class_accuracy.values()) / len(per_class_accuracy)
@@ -318,6 +318,39 @@ def get_validation_results(model, dataloader):
             pred_vals.append(preds)
     return true_vals, pred_vals
 
+def freeze_layers(model):
+  for param in model.parameters():
+    param.requires_grad = False
+  
+  # Unfreeze last layer
+  for param in model.fc.parameters():
+    param.requires_grad = True
+  return model
+
+# custom transform
+class PadToMaxSize:
+    def __init__(self, max_width, max_height):
+        self.max_width = max_width
+        self.max_height = max_height
+
+    def __call__(self, img):
+        width, height = img.size
+        pad_width = (self.max_width - width) // 2
+        pad_height = (self.max_height - height) // 2
+        padding = (pad_width, pad_height, self.max_width - width - pad_width, self.max_height - height - pad_height)
+        # Compute the average color of the edge pixels
+        img_np = np.array(img)
+        # Get edge pixels (top, bottom, left, right)
+        top_edge = img_np[0, :, :]
+        bottom_edge = img_np[-1, :, :]
+        left_edge = img_np[:, 0, :]
+        right_edge = img_np[:, -1, :]
+        # Stack all edge pixels together and calculate the mean
+        edge_pixels = np.vstack([top_edge, bottom_edge, left_edge, right_edge])
+        avg_color = edge_pixels.mean(axis=0).astype(int)
+        avg_color_tuple = tuple(avg_color)  # Convert to tuple for padding
+        return TF.pad(img, padding, fill=avg_color_tuple)
+
 # ImageNet mean and STD - NO NOTICABLE IMPROVEMENT 
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
@@ -341,6 +374,17 @@ data_transforms = {
         transforms.AugMix(),
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
+    ]),
+    'train_padToSize': transforms.Compose([
+        PadToMaxSize(width, height),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]),
+    'val_padToSize': transforms.Compose([
+        PadToMaxSize(width, height),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
     'val': transforms.Compose([
         transforms.Resize((224,224)),

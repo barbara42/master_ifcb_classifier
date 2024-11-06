@@ -32,13 +32,13 @@ BATCH_SIZE = 512
 NUM_WORKERS = 4
 EPOCHS = 30
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
-DEST_ROOT = '/nobackup/users/birdy/resnet-stage1-output'
+DEST_ROOT = "/nobackup/users/birdy/resnet-stage1-output"
 dataset_name = "UH"
-data_dir = '/home/birdy/meng_thesis/data/split_MGL1704_data'
+data_dir = "/home/birdy/meng_thesis/data/split_MGL1704_data"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# load up train and val dataloaders for cifar10 
+# load up train and val dataloaders 
 train_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/train", helper.data_transforms["train_basic"])
 val_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/test", helper.data_transforms["val"])
 class_names = train_dataset.classes
@@ -63,7 +63,7 @@ model= model.to(device)
 cross_entropy_loss = nn.CrossEntropyLoss()
 label_smoothing_loss = nn.CrossEntropyLoss(label_smoothing=0.1)
 criterions = [cross_entropy_loss, label_smoothing_loss]
-
+criterion_labels = ["cross_entropy_loss", "label_smoothing_loss"]
 # Set Up Optimizers:
 optimizers = ["sgd", "adam", "adamw"]
 
@@ -85,12 +85,12 @@ results_df = pd.DataFrame(columns=[
 # MAIN LOOP 
 for opt in optimizers:
   for sched in schedulers:
-    for criterion in criterions:
+    for crit, criterion in zip(criterion_labels, criterions):
       print("=" * 10)
       print(f"Optimizer: {opt}, Scheduler: {sched}, Criterion: {criterion}")
-      model_name = f"resnet18-{dataset_name}-{opt}-{sched}-{criterion}"
+      model_name = f"resnet18-{dataset_name}-{opt}-{sched}-{crit}"
       dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-      DEST = f'{DEST_ROOT}/{model_name}_{dt_string}'
+      DEST = f"{DEST_ROOT}/{model_name}_{dt_string}"
       os.makedirs(DEST)
 
       # INITIALIZE MODEL 
