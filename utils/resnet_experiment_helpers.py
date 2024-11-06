@@ -21,6 +21,7 @@ import os
 from PIL import Image
 from tempfile import TemporaryDirectory
 import torch.nn.functional as F
+import torchvision.transforms.functional as TF
 
 
 from sklearn.metrics import accuracy_score
@@ -354,6 +355,7 @@ class PadToMaxSize:
 # ImageNet mean and STD - NO NOTICABLE IMPROVEMENT 
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
+width, height = 224, 224 # for PadToSize
 data_transforms = {
     'train_none': transforms.Compose([
         transforms.ToTensor(),
