@@ -32,7 +32,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 512
 NUM_WORKERS = 4
-NUM_EPOCHS = 30
+NUM_EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
 DEST_ROOT = "/nobackup/users/birdy/resnet-stage3-output"
 dataset_name = "UH"
@@ -59,8 +59,8 @@ val_aug_key = ['val_padToSize', 'val']
 
 for t, v in zip(train_aug_key, val_aug_key):
     # load up train and val dataloaders 
-    train_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/train", helper.data_transforms["train_basic"])
-    val_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/test", helper.data_transforms["val"])
+    train_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/train", helper.data_transforms[t])
+    val_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/test", helper.data_transforms[v])
     class_names = train_dataset.classes
     NUM_CLASSES = len(train_dataset.classes)
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
