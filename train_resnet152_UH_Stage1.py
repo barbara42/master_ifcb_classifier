@@ -32,7 +32,7 @@ BATCH_SIZE = 512
 NUM_WORKERS = 4
 EPOCHS = 30
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
-DEST_ROOT = "/nobackup/users/birdy/resnet-stage1-output"
+DEST_ROOT = "/nobackup/users/birdy/resnet152-stage1-output"
 dataset_name = "UH"
 data_dir = "/home/birdy/meng_thesis/data/split_MGL1704_data"
 
@@ -88,7 +88,7 @@ for opt in optimizers:
     for crit, criterion in zip(criterion_labels, criterions):
       print("=" * 10)
       print(f"Optimizer: {opt}, Scheduler: {sched}, Criterion: {criterion}")
-      model_name = f"resnet18-{dataset_name}-{opt}-{sched}-{crit}"
+      model_name = f"resnet152-{dataset_name}-{opt}-{sched}-{crit}"
       dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
       DEST = f"{DEST_ROOT}/{model_name}_{dt_string}"
       os.makedirs(DEST)
@@ -121,8 +121,8 @@ for opt in optimizers:
                    batch_size, per_image_accuracy, per_class_accuracy, macs, wall_time, history)
       print(results_df)
       # save dataframe 
-      results_df.to_csv(f"{DEST_ROOT}/resnet18_{dataset_name}_stage1_results.csv", index=False)
+      results_df.to_csv(f"{DEST_ROOT}/resnet152_{dataset_name}_stage1_results.csv", index=False)
       print("")
 
 # save dataframe 
-results_df.to_csv(f"{DEST_ROOT}/resnet18_{dataset_name}_stage1_results.csv", index=False)
+results_df.to_csv(f"{DEST_ROOT}/resnet152_{dataset_name}_stage1_results.csv", index=False)
