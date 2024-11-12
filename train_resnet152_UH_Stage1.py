@@ -30,9 +30,9 @@ from utils import resnet_experiment_helpers as helper
 
 BATCH_SIZE = 512
 NUM_WORKERS = 4
-EPOCHS = 30
+EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
-DEST_ROOT = "/nobackup/users/birdy/resnet152-stage1-output"
+DEST_ROOT = "/nobackup/users/birdy/resnet152-stage1-output-2"
 dataset_name = "UH"
 data_dir = "/home/birdy/meng_thesis/data/split_MGL1704_data"
 
@@ -66,6 +66,7 @@ criterions = [cross_entropy_loss, label_smoothing_loss]
 criterion_labels = ["cross_entropy_loss", "label_smoothing_loss"]
 # Set Up Optimizers:
 optimizers = ["sgd", "adam", "adamw"]
+optimizers = ["adam", "adamw"] # only need to run these two this time 
 
 # Print out model MACS 
 macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
