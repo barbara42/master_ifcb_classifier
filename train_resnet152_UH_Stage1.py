@@ -118,7 +118,7 @@ for opt in optimizers:
       per_class_accuracy, _ = helper.evaluate_per_class_accuracy(model, dataloaders['val'], device)
       wall_time = model.history['time_elapsed']
       history = model.history
-      results_df = helper.record_metrics(results_df, model_name, criterion, opt, sched, learning_rate, 
+      results_df = helper.record_metrics(results_df, model_name, crit, opt, sched, learning_rate, 
                    batch_size, per_image_accuracy, per_class_accuracy, macs, wall_time, history)
       print(results_df)
       # save dataframe 
