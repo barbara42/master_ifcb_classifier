@@ -32,7 +32,7 @@ BATCH_SIZE = 512
 NUM_WORKERS = 4
 EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
-DEST_ROOT = "/nobackup/users/birdy/resnetAll-stage1-output-noDet"
+DEST_ROOT = "/nobackup/users/birdy/resnetAll-stage1-output-noDet2"
 dataset_name = "UH-noDet"
 data_dir = "/nobackup/users/birdy/data/split_MGL1704_noDet_data"
 
@@ -63,51 +63,51 @@ results_df = pd.DataFrame(columns=[
 ########### Resnet18 ############################################
 ##################################################################
 
-# Load the pretrained ResNet18 model.
-model = models.resnet18(weights='IMAGENET1K_V1')
-# Configure the classifier layer to match the number of classes in the dataset.
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
-model= model.to(device)
+# # Load the pretrained ResNet18 model.
+# model = models.resnet18(weights='IMAGENET1K_V1')
+# # Configure the classifier layer to match the number of classes in the dataset.
+# num_ftrs = model.fc.in_features
+# model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
+# model= model.to(device)
 
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
-scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
-criterion = nn.CrossEntropyLoss()
-opt = 'adam'
-sched = 'step'
-crit = 'crossEntropy'
+# optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
+# scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+# criterion = nn.CrossEntropyLoss()
+# opt = 'adam'
+# sched = 'step'
+# crit = 'crossEntropy'
 
-# Print out model MACS 
-macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
-model.MACs = macs
-print(f"MACs: {macs} million")
+# # Print out model MACS 
+# macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
+# model.MACs = macs
+# print(f"MACs: {macs} million")
 
-model_name = f"resnet18-noDet-{opt}-{sched}-{crit}"
-dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-DEST = f"{DEST_ROOT}/{model_name}_{dt_string}"
-os.makedirs(DEST)
+# model_name = f"resnet18-noDet-{opt}-{sched}-{crit}"
+# dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+# DEST = f"{DEST_ROOT}/{model_name}_{dt_string}"
+# os.makedirs(DEST)
 
-# TRAIN
-model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
-                    num_epochs=EPOCHS, save_checkpoints = True, DEST=DEST, 
-                    model_name=model_name, val_fqn=5, device="cuda")
+# # TRAIN
+# model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
+#                     num_epochs=EPOCHS, save_checkpoints = True, DEST=DEST, 
+#                     model_name=model_name, val_fqn=5, device="cuda")
 
-# RECORD
-learning_rate = optimizer.param_groups[0]['lr'] # TODO: might not be right 
-batch_size = dataloaders['train'].batch_size
-y_true, y_pred = helper.get_validation_results(model, dataloaders['val'])
-# per_image_accuracy = accuracy_score(y_true.cpu().data.numpy(), y_pred.cpu().data.numpy())
-per_image_accuracy = accuracy_score(torch.cat(y_true).cpu().data.numpy(), torch.cat(y_pred).cpu().data.numpy())
-per_class_accuracy, _ = helper.evaluate_per_class_accuracy(model, dataloaders['val'], device)
-wall_time = model.history['time_elapsed']
-history = model.history
-results_df = helper.record_metrics(results_df, model_name, crit, opt, sched, learning_rate, 
-              batch_size, per_image_accuracy, per_class_accuracy, macs, wall_time, history)
-print(results_df)
+# # RECORD
+# learning_rate = optimizer.param_groups[0]['lr'] # TODO: might not be right 
+# batch_size = dataloaders['train'].batch_size
+# y_true, y_pred = helper.get_validation_results(model, dataloaders['val'])
+# # per_image_accuracy = accuracy_score(y_true.cpu().data.numpy(), y_pred.cpu().data.numpy())
+# per_image_accuracy = accuracy_score(torch.cat(y_true).cpu().data.numpy(), torch.cat(y_pred).cpu().data.numpy())
+# per_class_accuracy, _ = helper.evaluate_per_class_accuracy(model, dataloaders['val'], device)
+# wall_time = model.history['time_elapsed']
+# history = model.history
+# results_df = helper.record_metrics(results_df, model_name, crit, opt, sched, learning_rate, 
+#               batch_size, per_image_accuracy, per_class_accuracy, macs, wall_time, history)
+# print(results_df)
 
-# save dataframe 
-results_df.to_csv(f"{DEST_ROOT}/resnetAll_{dataset_name}_stage1_results.csv", index=False)
-print("")
+# # save dataframe 
+# results_df.to_csv(f"{DEST_ROOT}/resnetAll_{dataset_name}_stage1_results.csv", index=False)
+# print("")
 
 
 ##################################################################
@@ -165,6 +165,7 @@ print("")
 ##################################################################
 ########### Resnet152 ############################################
 ##################################################################
+torch.cuda.empty_cache()
 
 # Load the pretrained ResNet152 model.
 model = models.resnet152(weights='IMAGENET1K_V1')
