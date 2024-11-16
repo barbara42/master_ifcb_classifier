@@ -28,7 +28,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from utils import resnet_experiment_helpers as helper
 
-BATCH_SIZE = 512
+BATCH_SIZE = 256 #512
 NUM_WORKERS = 4
 EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
