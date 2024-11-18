@@ -28,7 +28,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from utils import resnet_experiment_helpers as helper
 
-BATCH_SIZE = 256 #512
+BATCH_SIZE = 128 #256 #512
 NUM_WORKERS = 4
 EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
@@ -173,6 +173,7 @@ base_model = "resnet152"
 # Configure the classifier layer to match the number of classes in the dataset.
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
+model = nn.DataParallel(model, device_ids=[0, 1, 2, 3])
 model= model.to(device)
 
 optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
