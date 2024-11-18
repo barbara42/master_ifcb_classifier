@@ -49,7 +49,7 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
 
-dataset = torchvision.datasets.ImageFolder(data_dir}, helper.data_transforms["train_basic"])
+dataset = torchvision.datasets.ImageFolder(data_dir, helper.data_transforms["train_basic"])
 train_dataset, val_dataset = torch.utils.data.random_split(dataset, 0.8, 0.2)
 
 # train_dataset = torchvision.datasets.ImageFolder(f"{data_dir}/train", helper.data_transforms["train_basic"])
