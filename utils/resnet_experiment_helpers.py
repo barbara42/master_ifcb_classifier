@@ -33,6 +33,84 @@ cudnn.benchmark = True
 # plt.ion()   # interactive mode
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+from torchvision import transforms, datasets
+from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
+import pandas as pd
+import os
+from PIL import Image
+import json
+import torch
+
+class WHOIDataset(Dataset):
+    """
+    A custom dataset class that loads images based on a CSV file containing image ids, labels,
+    and data splits (train, val, test).
+    """
+    def __init__(self, data_dir, csv_file, split, transform=None):
+        """
+        Initializes the dataset.
+
+        Args:
+            data_dir (str): Path to the directory containing images.
+            csv_file (str): Path to the CSV file containing image ids, labels, and splits.
+            split (str): The split to use ('train', 'val', or 'test').
+            transform (callable, optional): Optional transform to be applied on a sample.
+        """
+        self.data_dir = data_dir
+        csv_file = pd.read_csv(csv_file)
+
+        # Count the occurrences of each class
+        label_counts = csv_file['label'].value_counts()
+
+        # Filter out classes with less than min_data_points
+        min_data_points = 3
+        self.filtered_labels = label_counts[label_counts >= min_data_points].index.tolist()
+        self.df = csv_file[csv_file['label'].isin(self.filtered_labels)]
+        
+        self.labels = self.df['label'].unique()
+        self.label_to_idx = {label: idx for idx, label in enumerate(self.labels)}
+        
+        # Store ignored classes information
+        self.ignored_classes = label_counts[label_counts < min_data_points].index.tolist()
+
+        self.split = split
+        self.transform = transform
+        self.data = self.df[self.df['split'] == split]
+        self.classes = pd.unique(self.data['label'])
+
+    def num_classes(self):
+        return len(self.labels)
+
+    def __len__(self):
+        """
+        Returns the size of the dataset.
+
+        Returns:
+            int: Number of samples in the dataset.
+        """
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        """
+        Retrieves an item at the specified index.
+
+        Args:
+            idx (int): Index of the item to retrieve.
+
+        Returns:
+            tuple: (image, label) where image is the transformed image and label is the class label.
+        """
+        img_name = os.path.join(f"{self.data_dir}/{self.data.iloc[idx]['label']}", self.data.iloc[idx]['image_name'])
+        image = Image.open(img_name).convert('RGB')
+        #label = self.data.iloc[idx, 1]
+        label = self.label_to_idx[self.data.iloc[idx]['label']]
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
+    
+
 def save_checkpoint(model, optimizer, save_path, epoch):
     torch.save({
         'model_state_dict': model.state_dict(),
