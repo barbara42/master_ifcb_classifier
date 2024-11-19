@@ -35,7 +35,6 @@ NUM_WORKERS = 4
 EPOCHS = 31
 dataset_name = "WHOI2014"
 DEST_ROOT = f"/nobackup/users/birdy/ResnetAll-stage1-{dataset_name}-output"
-os.makedirs(DEST_ROOT)
 
 # Initialize an empty DataFrame with columns for metrics
 results_df = pd.DataFrame(columns=[
@@ -71,7 +70,8 @@ model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
 model = nn.DataParallel(model)
 model= model.to(device)
 model_name = "resnet18"
-DEST = f"{DEST_ROOT}/{model_name}"
+dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+DEST = f"{DEST_ROOT}/{model_name}_{dt_string}"
 os.makedirs(DEST)
 
 criterion = nn.CrossEntropyLoss()
@@ -104,7 +104,7 @@ results_df.to_csv(f"{DEST_ROOT}/ResnetAll_{dataset_name}_stage1_results.csv", in
 print("")
 
 ###################################################################
-########################### Resnet18 ###########################
+########################### Resnet50 ###########################
 
 # Load the pretrained ResNet18 model.
 model = models.resnet50(weights='IMAGENET1K_V1')
@@ -114,7 +114,8 @@ model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
 model = nn.DataParallel(model)
 model= model.to(device)
 model_name = "resnet50"
-DEST = f"{DEST_ROOT}/{model_name}"
+dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+DEST = f"{DEST_ROOT}/{model_name}_{dt_string}"
 os.makedirs(DEST)
 
 criterion = nn.CrossEntropyLoss()
@@ -157,7 +158,8 @@ model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
 model = nn.DataParallel(model)
 model= model.to(device)
 model_name = "resnet152"
-DEST = f"{DEST_ROOT}/{model_name}"
+dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+DEST = f"{DEST_ROOT}/{model_name}_{dt_string}"
 os.makedirs(DEST)
 
 criterion = nn.CrossEntropyLoss()
