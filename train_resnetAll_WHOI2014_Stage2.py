@@ -34,7 +34,7 @@ NUM_WORKERS = 4
 NUM_EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
 dataset_name = "WHOI2014"
-DEST_ROOT = f"/nobackup/users/birdy/resnetAll-{dataset_name}-stage2-output"
+DEST_ROOT = f"/nobackup/users/birdy/resnetAll-{dataset_name}-stage2-dropout-output"
 
 data_dir = f"/nobackup/projects/public/WHOI-Plankton/2014"
 csv_file = f"WHOI2014_labels.csv"

@@ -406,6 +406,14 @@ def freeze_layers(model):
     param.requires_grad = True
   return model
 
+def append_dropout(model, rate=0.2):
+  for name, module in model.named_children():
+      if len(list(module.children())) > 0:
+          append_dropout(module)
+      if isinstance(module, nn.ReLU):
+          new = nn.Sequential(module, nn.Dropout2d(p=rate))
+          setattr(model, name, new)
+
 # custom transform
 class PadToMaxSize:
     def __init__(self, max_width, max_height):
