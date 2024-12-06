@@ -34,7 +34,7 @@ NUM_WORKERS = 4
 NUM_EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
 dataset_name = "WHOI2014"
-DEST_ROOT = f"/nobackup/users/birdy/resnetAll-{dataset_name}-stage2-dropout-output"
+DEST_ROOT = f"/nobackup/users/birdy/resnetAll-{dataset_name}-stage2-dropout-output50"
 
 data_dir = f"/nobackup/projects/public/WHOI-Plankton/2014"
 csv_file = f"WHOI2014_labels.csv"
@@ -227,8 +227,8 @@ for dropout in [0.1, 0.3, 0.5]:
     # Configure the classifier layer to match the number of classes in the dataset.
     num_ftrs = model.fc.in_features
     model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
-    helper.append_dropout(model, rate=0.1)
-    model = nn.DataParallel(model, device_ids=[0])
+    helper.append_dropout(model, rate=dropout)
+    model = nn.DataParallel(model)
     model= model.to(device)
     # measure macs
     macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
@@ -275,8 +275,8 @@ for dropout in [0.1, 0.3, 0.5]:
     # Configure the classifier layer to match the number of classes in the dataset.
     num_ftrs = model.fc.in_features
     model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
-    helper.append_dropout(model, rate=0.1)
-    model = nn.DataParallel(model, device_ids=[0])
+    helper.append_dropout(model, rate=dropout)
+    model = nn.DataParallel(model)
     model= model.to(device)
     # measure macs
     macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
@@ -323,8 +323,8 @@ for dropout in [0.1, 0.3, 0.5]:
     # Configure the classifier layer to match the number of classes in the dataset.
     num_ftrs = model.fc.in_features
     model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
-    helper.append_dropout(model, rate=0.1)
-    model = nn.DataParallel(model, device_ids=[0])
+    helper.append_dropout(model, rate=dropout)
+    model = nn.DataParallel(model)
     model= model.to(device)
     # measure macs
     macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")

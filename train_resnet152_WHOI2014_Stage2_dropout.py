@@ -66,8 +66,8 @@ for dropout in [0.1, 0.3, 0.5]:
     # Configure the classifier layer to match the number of classes in the dataset.
     num_ftrs = model.fc.in_features
     model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
-    helper.append_dropout(model, rate=0.1)
-    model = nn.DataParallel(model, device_ids=[0])
+    helper.append_dropout(model, rate=dropout)
+    model = nn.DataParallel(model)
     model= model.to(device)
     # measure macs
     macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
