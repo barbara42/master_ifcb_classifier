@@ -29,7 +29,7 @@ cudnn.benchmark = True
 # plt.ion()   # interactive mode
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 512
+BATCH_SIZE = 256 #512
 NUM_WORKERS = 4
 NUM_EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
