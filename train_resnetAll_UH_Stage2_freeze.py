@@ -87,7 +87,6 @@ dataloaders = {
 #     'MACs', 'wall_time', 'history'
 # ])
 
-# DEST_ROOT = "/content/gdrive/My Drive/EAPS Research/MEng/MEng Thesis - IFCB AI/ResNet_Stage2_Output"
 # opt = "adam"
 # sched = "step"
 # crit = "cross_entropy"
@@ -149,7 +148,6 @@ results_df = pd.DataFrame(columns=[
     'MACs', 'wall_time', 'history'
 ])
 
-DEST_ROOT = "/content/gdrive/My Drive/EAPS Research/MEng/MEng Thesis - IFCB AI/ResNet_Stage2_Output"
 opt = "adam"
 sched = "step"
 crit = "cross_entropy"
@@ -210,7 +208,6 @@ results_df = pd.DataFrame(columns=[
     'MACs', 'wall_time', 'history'
 ])
 
-DEST_ROOT = "/content/gdrive/My Drive/EAPS Research/MEng/MEng Thesis - IFCB AI/ResNet_Stage2_Output"
 opt = "adam"
 sched = "step"
 crit = "cross_entropy"
