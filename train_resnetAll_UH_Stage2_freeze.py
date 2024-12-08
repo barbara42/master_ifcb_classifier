@@ -34,7 +34,7 @@ NUM_WORKERS = 4
 NUM_EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
 dataset_name = "UH"
-DEST_ROOT = f"/nobackup/users/birdy/resnet-{dataset_name}-stage2-freeze18_50"
+DEST_ROOT = f"/nobackup/users/birdy/resnet-{dataset_name}-stage2-freeze50"
 data_dir = "/home/birdy/meng_thesis/data/split_MGL1704_data"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -67,55 +67,55 @@ results_df = pd.DataFrame(columns=[
 # ResNet18
 ###########################################################################
 
-# Load the pretrained ResNet18 model.
-model = models.resnet18(weights='IMAGENET1K_V1')
-# Configure the classifier layer to match the number of classes in the dataset.
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
-model = helper.freeze_layers(model)
-model = nn.DataParallel(model)
-model= model.to(device)
+# # Load the pretrained ResNet18 model.
+# model = models.resnet18(weights='IMAGENET1K_V1')
+# # Configure the classifier layer to match the number of classes in the dataset.
+# num_ftrs = model.fc.in_features
+# model.fc = nn.Linear(num_ftrs, NUM_CLASSES)
+# model = helper.freeze_layers(model)
+# model = nn.DataParallel(model)
+# model= model.to(device)
 
-# measure macs 
-macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
-print(f"MACs: {macs}")
+# # measure macs 
+# macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
+# print(f"MACs: {macs}")
 
-# adam and step 
-# adamw and cos
+# # adam and step 
+# # adamw and cos
 
-optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
-scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
-criterion = nn.CrossEntropyLoss()
+# optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=0.0001)
+# scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+# criterion = nn.CrossEntropyLoss()
 
-opt = "adam"
-sched = "step"
-crit = "cross_entropy"
+# opt = "adam"
+# sched = "step"
+# crit = "cross_entropy"
 
-# TRAIN
-model_name = f"resnet18-{dataset_name}-freeze"
-DEST = f"{DEST_ROOT}/{model_name}"
-os.makedirs(DEST, exist_ok=True)
-model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
-                    num_epochs=NUM_EPOCHS, save_checkpoints = True, DEST=DEST,
-                    model_name=model_name, val_fqn=5, device="cuda")
+# # TRAIN
+# model_name = f"resnet18-{dataset_name}-freeze"
+# DEST = f"{DEST_ROOT}/{model_name}"
+# os.makedirs(DEST, exist_ok=True)
+# model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
+#                     num_epochs=NUM_EPOCHS, save_checkpoints = True, DEST=DEST,
+#                     model_name=model_name, val_fqn=5, device="cuda")
 
-# RECORD
-learning_rate = optimizer.param_groups[0]['lr'] # TODO: might not be right
-batch_size = dataloaders['train'].batch_size
-y_true, y_pred = helper.get_validation_results(model, dataloaders['val'])
-# per_image_accuracy = accuracy_score(y_true.cpu().data.numpy(), y_pred.cpu().data.numpy())
-per_image_accuracy = accuracy_score(torch.cat(y_true).cpu().data.numpy(), torch.cat(y_pred).cpu().data.numpy())
-per_class_accuracy, _ = helper.evaluate_per_class_accuracy(model, dataloaders['val'], device)
-wall_time = model.history['time_elapsed']
-history = model.history
-results_df = helper.record_metrics(results_df, model_name, crit, opt, sched, learning_rate,
-              batch_size, per_image_accuracy, per_class_accuracy, macs, wall_time, history)
-results_df.to_csv(f"{DEST_ROOT}/{dataset_name}_stage2_freeze_results.csv", index=False)
-print(results_df)
-print("")
+# # RECORD
+# learning_rate = optimizer.param_groups[0]['lr'] # TODO: might not be right
+# batch_size = dataloaders['train'].batch_size
+# y_true, y_pred = helper.get_validation_results(model, dataloaders['val'])
+# # per_image_accuracy = accuracy_score(y_true.cpu().data.numpy(), y_pred.cpu().data.numpy())
+# per_image_accuracy = accuracy_score(torch.cat(y_true).cpu().data.numpy(), torch.cat(y_pred).cpu().data.numpy())
+# per_class_accuracy, _ = helper.evaluate_per_class_accuracy(model, dataloaders['val'], device)
+# wall_time = model.history['time_elapsed']
+# history = model.history
+# results_df = helper.record_metrics(results_df, model_name, crit, opt, sched, learning_rate,
+#               batch_size, per_image_accuracy, per_class_accuracy, macs, wall_time, history)
+# results_df.to_csv(f"{DEST_ROOT}/{dataset_name}_stage2_freeze_results.csv", index=False)
+# print(results_df)
+# print("")
 
-# save df
-results_df.to_csv(f"{DEST_ROOT}/{dataset_name}_stage2_freeze_results.csv", index=False)
+# # save df
+# results_df.to_csv(f"{DEST_ROOT}/{dataset_name}_stage2_freeze_results.csv", index=False)
 
 # ResNet50
 ###########################################################################
