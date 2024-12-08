@@ -34,7 +34,7 @@ NUM_WORKERS = 4
 NUM_EPOCHS = 31
 #DEST_ROOT = '/home/birdy/meng_thesis/code/master_ifcb_classifier/output/ResNet18-Stage1'
 dataset_name = "UH"
-DEST_ROOT = f"/nobackup/users/birdy/resnet-{dataset_name}-stage2-dropout"
+DEST_ROOT = f"/nobackup/users/birdy/resnet-{dataset_name}-stage2-dropout2"
 data_dir = "/home/birdy/meng_thesis/data/split_MGL1704_data"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -52,6 +52,14 @@ dataloaders = {
     'train': train_dataloader,
     'val': val_dataloader
 }
+
+# Initialize an empty DataFrame with columns for metrics
+results_df = pd.DataFrame(columns=[
+    'model_name', 'loss_function', 'optimizer', 'scheduler',
+    'learning_rate','batch_size', 'per_image_accuracy', 'per_class_accuracy',
+    'MACs', 'wall_time', 'history'
+])
+
 
 ##########################################################################
 ############### Dropout Levels ###########################################
