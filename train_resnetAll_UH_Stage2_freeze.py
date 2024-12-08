@@ -92,7 +92,7 @@ sched = "step"
 crit = "cross_entropy"
 
 # TRAIN
-model_name = f"resnet18-{dataset_name}-freeze-{optim}-{sched}"
+model_name = f"resnet18-{dataset_name}-freeze"
 DEST = f"{DEST_ROOT}/{model_name}"
 os.makedirs(DEST, exist_ok=True)
 model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
