@@ -154,6 +154,28 @@ def calculate_macs(model, input_size=(3, 224, 224), device="cuda"):
 
     return macs_in_millions
 
+def calculate_vit_macs(model, device="cuda"):
+    """
+    Calculate the Multiply-Accumulate Operations (MACs) for a given model.
+
+    Args:
+        model (torch.nn.Module): The model to evaluate.
+        input_size (tuple): The input size for the model (default is (3, 224, 224) for typical image inputs).
+        device (str): Device to perform computation on ("cuda" or "cpu").
+
+    Returns:
+        float: The number of MACs in millions (for easier readability).
+    """
+    model.to(device)  # Move model to specified device
+    model.eval()  # Set model to evaluation mode
+
+    sample_input = torch.randn(1, 3, 224, 224)
+    macs = torchprofile.profile_macs(model, args=(sample_input,))
+    # Convert MACs to millions for readability
+    macs_in_millions = macs / 1e6
+
+    return macs_in_millions
+
 def record_metrics(metrics_df, model_name, loss_function, optimizer, scheduler, learning_rate, 
                    batch_size, per_image_accuracy, per_class_accuracy, MACs, wall_time, history):
     """

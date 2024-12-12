@@ -73,8 +73,9 @@ sched = "CosineAnnealingLR"
 crit = "CrossEntropyLoss"
 
 # measure macs 
-macs = helper.calculate_macs(model, input_size=(3, 224, 224), device="cuda")
-print(f"MACs: {macs}")
+macs = helper.calculate_vit_macs(model, device="cuda")
+print(f"Number of MACs: {macs}")
+
 DEST = f"{DEST_ROOT}/{model_name}"
 os.makedirs(DEST)
 
