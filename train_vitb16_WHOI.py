@@ -77,7 +77,7 @@ macs = helper.calculate_vit_macs(model, device="cuda")
 print(f"Number of MACs: {macs}")
 
 DEST = f"{DEST_ROOT}/{model_name}"
-os.makedirs(DEST)
+os.makedirs(DEST, exist_ok=True)
 
 model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
                     num_epochs=NUM_EPOCHS, save_checkpoints = True, DEST=DEST,
