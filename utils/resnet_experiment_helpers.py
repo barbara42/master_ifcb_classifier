@@ -231,7 +231,7 @@ def get_opt_sched(opt, sched, model):
   
   return optimizer, scheduler
 
-def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=25, start_epoch = 0, save_checkpoints = False, DEST='', model_name="ResNet", val_fqn=1, device="cpu"):
+def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=25, start_epoch=0, save_checkpoints = False, DEST='', model_name="ResNet", val_fqn=1, device="cpu"):
     since = time.time()
 
     # Create a temporary directory to save training checkpoints

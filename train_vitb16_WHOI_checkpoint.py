@@ -93,7 +93,7 @@ print(f"Number of MACs: {macs}")
 DEST = f"{DEST_ROOT}/{model_name}"
 os.makedirs(DEST, exist_ok=True)
 
-model = helper.train_model_from_checkpoint(model, dataloaders, criterion, optimizer, scheduler,
+model = helper.train_model(model, dataloaders, criterion, optimizer, scheduler,
                     num_epochs=NUM_EPOCHS, start_epoch = last_epoch, save_checkpoints = True, DEST=DEST,
                     model_name=model_name, val_fqn=5, device="cuda")
 
