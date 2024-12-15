@@ -231,7 +231,7 @@ def get_opt_sched(opt, sched, model):
   
   return optimizer, scheduler
 
-def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=25, save_checkpoints = False, DEST='', model_name="ResNet", val_fqn=1, device="cpu"):
+def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=25, start_epoch = 0, save_checkpoints = False, DEST='', model_name="ResNet", val_fqn=1, device="cpu"):
     since = time.time()
 
     # Create a temporary directory to save training checkpoints
@@ -255,7 +255,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=
             }
         dt_string = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 
-        for epoch in range(num_epochs):
+        for epoch in range(start_epoch, num_epochs):
             print(f'Epoch {epoch}/{num_epochs - 1}')
             print('-' * 10)
             epoch_start_time = time.time()
