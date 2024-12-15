@@ -83,7 +83,7 @@ crit = "CrossEntropyLoss"
 
 model_save_dir = args.model_save_dir
 model_save_name = args.model_save_name
-load_path = f"{model_save_dir}/{model_save_name}.pt"
+load_path = f"{model_save_dir}/{model_save_name}"
 model, optimizer, last_epoch = helper.load_checkpoint(model, optimizer, load_path)
 
 # measure macs 
