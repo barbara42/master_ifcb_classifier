@@ -362,7 +362,7 @@ def evaluate_per_class_accuracy(model, dataloader, device):
     total_per_class = defaultdict(int)
 
     with torch.no_grad():  # Disable gradient calculation for evaluation
-        for inputs, labels in dataloader:
+        for inputs, labels in tqdm(dataloader):
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
@@ -380,7 +380,7 @@ def evaluate_per_class_accuracy(model, dataloader, device):
     }
     per_class_accuracy_avg = sum(per_class_accuracy.values()) / len(per_class_accuracy)
 
-    return per_class_accuracy_avg, per_class_accuracy
+    return per_class_accuracy_avg, (per_class_accuracy, total_per_class)
 
 
 def calculate_per_class_accuracy(y_true, y_pred):
