@@ -300,6 +300,8 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=
 
                     # statistics
                     running_loss += loss.item() * inputs.size(0)
+                    print("labels.data.shape:", labels.data.shape)
+                    print("preds.shape:", preds.shape)
                     running_corrects += torch.sum(preds == labels.data)
                     avg_class_acc, _ = calculate_per_class_accuracy(labels.data.cpu().numpy(), preds.cpu().numpy())
                     running_class_acc += avg_class_acc
