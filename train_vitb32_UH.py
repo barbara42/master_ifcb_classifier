@@ -35,7 +35,7 @@ NUM_WORKERS = 4
 NUM_EPOCHS = 31
 LEARNING_RATE = 0.001
 dataset_name = "UH"
-model_name = "vitb16"
+model_name = "vitb32"
 DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}"
 
 dataset_name = "UH"
