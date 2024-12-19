@@ -394,7 +394,9 @@ def calculate_per_class_accuracy(y_true, y_pred):
     
     # Loop through each true and predicted label pair
     for true, pred in zip(y_true, y_pred):
-        # if true is a tensor, 
+        # handling one-hot encoded values
+        if isinstance(true, np.ndarray):
+            true = np.argmax(true, axis=1)
         print("true:", true)
         print(type(true))
         print("pred:", pred)
