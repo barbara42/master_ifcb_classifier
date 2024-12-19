@@ -395,6 +395,7 @@ def calculate_per_class_accuracy(y_true, y_pred):
     # Loop through each true and predicted label pair
     for true, pred in zip(y_true, y_pred):
         print("true:", true)
+        print("pred:", pred)
         total_counts[true] += 1  # Increment total count for the true class
         if true == pred:
             correct_counts[true] += 1  # Increment correct count if prediction matches the true label
