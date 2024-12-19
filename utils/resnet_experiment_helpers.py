@@ -396,7 +396,7 @@ def calculate_per_class_accuracy(y_true, y_pred):
     for true, pred in zip(y_true, y_pred):
         # handling one-hot encoded values
         if isinstance(true, np.ndarray):
-            true = np.argmax(true, axis=1)
+            true = np.argmax(true, axis=0)
         print("true:", true)
         print(type(true))
         print("pred:", pred)
