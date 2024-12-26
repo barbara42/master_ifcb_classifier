@@ -73,12 +73,14 @@ model.heads.head = nn.Linear(model.heads.head.in_features, NUM_CLASSES)
 model = nn.DataParallel(model)
 model= model.to(device)
 
-criterion = nn.BCEWithLogitsLoss()
+# criterion = nn.BCEWithLogitsLoss()
+# crit = "BCEWithLogitsLoss"
+criterion = nn.CrossEntropyLoss()
+crit = "CrossEntropyLoss"
 optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.03)
 scheduler = CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
 opt = "adamw"
 sched = "CosineAnnealingLR"
-crit = "BCEWithLogitsLoss"
 
 # measure macs 
 macs = helper.calculate_vit_macs(model, device="cuda")

@@ -397,9 +397,6 @@ def calculate_per_class_accuracy(y_true, y_pred):
         # handling one-hot encoded values
         if isinstance(true, np.ndarray):
             true = np.argmax(true, axis=0)
-        print("true:", true)
-        print(type(true))
-        print("pred:", pred)
         total_counts[true] += 1  # Increment total count for the true class
         if true == pred:
             correct_counts[true] += 1  # Increment correct count if prediction matches the true label
