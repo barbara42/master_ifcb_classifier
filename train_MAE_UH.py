@@ -21,7 +21,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 # import the MAE code from local source 
-mae_src = "home/birdy/meng_thesis/code/MAE"
+mae_src = "/home/birdy/meng_thesis/code/MAE"
 sys.path.append(mae_src)
 from model import MAE_ViT
 
