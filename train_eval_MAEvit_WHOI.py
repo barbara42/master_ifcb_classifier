@@ -72,7 +72,7 @@ model_name = f"vit-cls-{dataset_name}-from-scratch_{total_epoch}"
 vit_output_model_path = f"{DEST_ROOT}/{model_name}.pt"
 
 # load up trained MAE model 
-model = MAE_ViT()
+model = MAE_ViT(mask_ratio=mask_ratio, image_size=224, patch_size=16)
 model = ViT_Classifier(model.encoder, num_classes=NUM_CLASSES).to(device)
 
 # set up optimizer, scheduler, loss function
