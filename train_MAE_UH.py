@@ -14,7 +14,7 @@ import sys
 import math
 import os 
 from utils import resnet_experiment_helpers as helper
-
+from einops import repeat, rearrange
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -34,6 +34,7 @@ NUM_WORKERS = 2
 dataset_name = "UH"
 model_name = "MAE"
 DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}"
+os.makedirs(DEST_ROOT)
 
 mask_ratio = 0.75
 base_learning_rate = 1.5e-4
