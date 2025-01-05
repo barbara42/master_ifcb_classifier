@@ -34,7 +34,7 @@ NUM_WORKERS = 2
 dataset_name = "UH"
 model_name = "MAE"
 DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}"
-os.makedirs(DEST_ROOT)
+os.makedirs(DEST_ROOT, exist_ok=True)
 
 mask_ratio = 0.75
 base_learning_rate = 1.5e-4
