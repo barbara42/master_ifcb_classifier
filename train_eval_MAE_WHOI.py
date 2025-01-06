@@ -36,7 +36,7 @@ mask_ratio = 0.75
 base_learning_rate = 1.5e-4
 weight_decay = 0.05
 warmup_epoch = 5
-total_epoch = 31
+total_epoch = 300
 
 dataset_name = "WHOI"
 model_name = f"MAE_{dataset_name}_{total_epoch}"
@@ -115,7 +115,7 @@ writer = SummaryWriter(log_dir)
 base_learning_rate = 1e-3
 weight_decay = 0.05
 warmup_epoch = 5
-total_epoch = 31
+total_epoch = 50
 
 model_name = f"vit-cls-{dataset_name}-from-mae_{total_epoch}"
 vit_output_model_path = f"{DEST_ROOT}/{model_name}.pt"
