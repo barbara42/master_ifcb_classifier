@@ -29,7 +29,7 @@ from model import ViT_Classifier
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 256
-NUM_WORKERS = 2
+NUM_WORKERS = 4
 #NUM_EPOCHS = 31
 # LEARNING_RATE = 0.001
 mask_ratio = 0.75
