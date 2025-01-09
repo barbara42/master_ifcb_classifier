@@ -62,7 +62,11 @@ dataloaders = {
 
 
 mask_ratios = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
-for mask_ratio in mask_ratios.reverse():
+mask_ratios = mask_ratios[::-1]
+for mask_ratio in mask_ratios:
+    print("=============================================")
+    print(f"Training MAE with mask ratio {mask_ratio}")
+
     # logs stored in the writer
     log_dir = f"{DEST_ROOT}/logs/mae_pretrain_maskratio{mask_ratio}"
     writer = SummaryWriter(log_dir)
@@ -84,6 +88,8 @@ for mask_ratio in mask_ratios.reverse():
     # train MAE 
     mae_helper.train_mae(model, mask_ratio, total_epoch, dataloaders, 
                         device, optim, lr_scheduler, writer, mae_model_path)
+
+    print(f"Evaluating MAE with mask ratio {mask_ratio}")
 
     # evaluate encoder
     log_dir = f"{DEST_ROOT}/logs/vit_cls_ft_{mask_ratio}"
