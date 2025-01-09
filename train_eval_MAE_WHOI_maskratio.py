@@ -29,7 +29,7 @@ from model import ViT_Classifier
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 256
+BATCH_SIZE = 512 #256
 NUM_WORKERS = 4
 #NUM_EPOCHS = 31
 # LEARNING_RATE = 0.001
@@ -40,8 +40,8 @@ warmup_epoch = 5
 total_epoch = 30
 
 dataset_name = "WHOI"
-model_name = f"MAE_{dataset_name}_maskratios"
-DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}"
+model_name = f"MAE_{dataset_name}_maskratios2"
+DEST_ROOT = f"/nobackup/users/birdy/{model_name}"
 os.makedirs(DEST_ROOT, exist_ok=True)
 
 
@@ -60,20 +60,21 @@ dataloaders = {
     'val': val_dataloader
 }
 
-# logs stored in the writer
-log_dir = f"{DEST_ROOT}/logs/mae_pretrain_maskratio"
-writer = SummaryWriter(log_dir)
 
-mask_ratios = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
-for mask_ratio in mask_ratios:
+mask_ratios = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
+for mask_ratio in mask_ratios.reverse():
+    # logs stored in the writer
+    log_dir = f"{DEST_ROOT}/logs/mae_pretrain_maskratio{mask_ratio}"
+    writer = SummaryWriter(log_dir)
+
     base_learning_rate = 1.5e-4
     weight_decay = 0.05
     warmup_epoch = 5
     total_epoch = 30
 
     # create model
+    model_name = f"MAE_{dataset_name}_maskratio_{mask_ratio}"
     model = MAE_ViT(mask_ratio=mask_ratio, image_size=224, patch_size=16).to(device)
-    model = nn.DataParallel(model)
     mae_model_path = f"{DEST_ROOT}/{model_name}_model_{mask_ratio}.pt"
 
     optim = torch.optim.AdamW(model.parameters(), lr=base_learning_rate * BATCH_SIZE / 256, betas=(0.9, 0.95), weight_decay=weight_decay)
@@ -100,7 +101,6 @@ for mask_ratio in mask_ratios:
     pretrained_model_path = mae_model_path
     model = torch.load(pretrained_model_path, map_location='cpu')
     model = ViT_Classifier(model.encoder, num_classes=NUM_CLASSES).to(device)
-    model = nn.DataParallel(model)
 
     # set up optimizer, scheduler, loss function
     loss_fn = torch.nn.CrossEntropyLoss()
