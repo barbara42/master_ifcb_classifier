@@ -30,7 +30,7 @@ from model import ViT_Classifier
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 256
-NUM_WORKERS = 4
+NUM_WORKERS = 6
 #NUM_EPOCHS = 31
 # LEARNING_RATE = 0.001
 mask_ratio = 0.75
@@ -100,6 +100,7 @@ for mask_ratio in mask_ratios:
     pretrained_model_path = mae_model_path
     model = torch.load(pretrained_model_path, map_location='cpu')
     model = ViT_Classifier(model.encoder, num_classes=NUM_CLASSES).to(device)
+    model = nn.DataParallel(model)
 
     # set up optimizer, scheduler, loss function
     loss_fn = torch.nn.CrossEntropyLoss()
