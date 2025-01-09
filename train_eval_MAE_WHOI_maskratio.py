@@ -73,6 +73,7 @@ for mask_ratio in mask_ratios:
 
     # create model
     model = MAE_ViT(mask_ratio=mask_ratio, image_size=224, patch_size=16).to(device)
+    model = nn.DataParallel(model)
     mae_model_path = f"{DEST_ROOT}/{model_name}_model_{mask_ratio}.pt"
 
     optim = torch.optim.AdamW(model.parameters(), lr=base_learning_rate * BATCH_SIZE / 256, betas=(0.9, 0.95), weight_decay=weight_decay)
