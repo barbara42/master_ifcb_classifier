@@ -35,11 +35,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BATCH_SIZE = 128 #512
 NUM_WORKERS = 4
 NUM_EPOCHS = 31
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 MIXUP_ALPHA = 0.2
 dataset_name = "WHOI2014"
 model_name = "vitb32-MixUpRandAug"
-DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}"
+DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}-2"
 
 data_dir = f"/nobackup/projects/public/WHOI-Plankton/2014"
 csv_file = f"WHOI2014_labels.csv"

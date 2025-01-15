@@ -100,7 +100,7 @@ class WHOIDataset(Dataset):
         Returns:
             tuple: (image, label) where image is the transformed image and label is the class label.
         """
-        img_name = os.path.join(f"{self.data_dir}/{self.data.iloc[idx]['label']}", self.data.iloc[idx]['image_name'])
+        img_name = os.path.join(f"{self.data_dir}/{self.data.iloc[idx]["year"]}/{self.data.iloc[idx]['label']}", self.data.iloc[idx]['image_name'])
         image = Image.open(img_name).convert('RGB')
         #label = self.data.iloc[idx, 1]
         label = self.label_to_idx[self.data.iloc[idx]['label']]
