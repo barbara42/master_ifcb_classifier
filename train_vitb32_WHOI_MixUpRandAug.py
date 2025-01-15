@@ -41,7 +41,8 @@ dataset_name = "WHOI2014"
 model_name = "vitb32-MixUpRandAug"
 DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}-2"
 
-data_dir = f"/nobackup/projects/public/WHOI-Plankton/2014"
+# data_dir = f"/nobackup/projects/public/WHOI-Plankton/2014"
+data_dir = f"/nobackup/projects/public/WHOI-Plankton"
 csv_file = f"WHOI2014_labels.csv"
 train_dataset = helper.WHOIDataset(data_dir, csv_file, "train", transform=vit_helper.data_transforms["train_randaug"])
 val_dataset = helper.WHOIDataset(data_dir, csv_file, "val", transform=vit_helper.data_transforms["val"])
