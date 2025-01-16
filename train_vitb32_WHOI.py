@@ -32,15 +32,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 128 #512
 NUM_WORKERS = 4
-NUM_EPOCHS = 31
+NUM_EPOCHS = 50
 LEARNING_RATE = 0.0001
-dataset_name = "WHOI2014"
+dataset_name = "WHOI_ALL"
 model_name = "vitb32"
-DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}-2"
+DEST_ROOT = f"/nobackup/users/birdy/{model_name}-{dataset_name}"
 
 # data_dir = f"/nobackup/projects/public/WHOI-Plankton/2014"
 data_dir = f"/nobackup/projects/public/WHOI-Plankton"
-csv_file = f"WHOI2014_labels.csv"
+csv_file = f"WHOIall_labels.csv"
 train_dataset = helper.WHOIDataset(data_dir, csv_file, "train", transform=helper.data_transforms["train_basic"])
 val_dataset = helper.WHOIDataset(data_dir, csv_file, "val", transform=helper.data_transforms["val"])
 NUM_CLASSES = len(train_dataset.classes)
