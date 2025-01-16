@@ -45,7 +45,7 @@ os.makedirs(DEST_ROOT, exist_ok=True)
 
 
 
-data_dir = f"/nobackup/projects/public/WHOI-Plankton/2014"
+data_dir = f"/nobackup/projects/public/WHOI-Plankton"
 csv_file = f"WHOI2014_labels.csv"
 train_dataset = helper.WHOIDataset(data_dir, csv_file, "train", transform=helper.data_transforms["train_basic"])
 val_dataset = helper.WHOIDataset(data_dir, csv_file, "val", transform=helper.data_transforms["val"])
