@@ -40,7 +40,7 @@ warmup_epoch = 5
 total_epoch = 30
 
 dataset_name = "UH"
-model_name = f"MAE_{dataset_name}_maskratios2"
+model_name = f"MAE_{dataset_name}_maskratios3"
 DEST_ROOT = f"/nobackup/users/birdy/{model_name}"
 os.makedirs(DEST_ROOT, exist_ok=True)
 
@@ -63,7 +63,7 @@ dataloaders = {
 mask_ratios = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 mask_ratios = [0.2, 0.3, 0.4, 0.5, 0.6]
 
-mask_ratios = mask_ratios[::-1]
+# mask_ratios = mask_ratios[::-1]
 for mask_ratio in mask_ratios:
     print("=============================================")
     print(f"Training MAE with mask ratio {mask_ratio}")
